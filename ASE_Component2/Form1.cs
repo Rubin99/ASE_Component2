@@ -15,9 +15,9 @@ namespace ASE_Component2
     /// The main class of the program that inherits form the Form class.
     /// </summary>
     public partial class Form1 : Form
-    {        
+    {
         public Form1()
-        {            
+        {
             InitializeComponent();
         }
         /// <summary>
@@ -32,15 +32,15 @@ namespace ASE_Component2
         /// <param name="midY">Used for second y coordinate for triangle</param>
         /// <param name="shapeWidth">Used for recatangle and for circle(as radius)</param>
         /// <param name="shapeHeight">Used for Rectnangle</param>
-       
+
         ShapeFactory factory = new ShapeFactory();
-        int intX = 0;     
-        int intY = 0;   
-        int finalX = 0;   
-        int finalY = 0;   
-        int midX = 0;     
-        int midY = 0;     
-        int shapeWidth = 0;   
+        int intX = 0;
+        int intY = 0;
+        int finalX = 0;
+        int finalY = 0;
+        int midX = 0;
+        int midY = 0;
+        int shapeWidth = 0;
         int shapeHeight = 0;
         /// <summary>
         /// fillColor is an object created of the class Color.
@@ -55,7 +55,7 @@ namespace ASE_Component2
         int penColor = 1;         //penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
         int fillOk = 1;        //fillOk  1 = true, 2 = false
 
-        int lineNo = 0;     
+        int lineNo = 0;
         Graphics gObj;
 
         string[] myMethodArr;
@@ -125,7 +125,7 @@ namespace ASE_Component2
             }
             RunCommand(true);
             //reset line number to initial position
-           // lineNo = 0;
+            // lineNo = 0;
         }
         /// <summary>
         /// Click event for the Clear canvas button.
@@ -210,95 +210,16 @@ namespace ASE_Component2
                 string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 int numParams = runCmd.Length;
 
-                if (runCmd[0].ToUpper().Trim() == "MOVETO")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 3) { DisplayError("Parameter", lines[i], i); break; }
-
-                    intX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                    intY = Convert.ToInt32(runCmd[2].Trim());
-
-                    lbl_CurrentPosition.Text = "Current Position (" + runCmd[1] + " " + runCmd[2] + ")";
-                }
-                else if (runCmd[0].ToUpper().Trim() == "DRAWTO")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 3) { DisplayError("Parameter", lines[i], i); break; }
-
-                    finalX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                    finalY = Convert.ToInt32(runCmd[2]);
-                    DrawLine();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "CLEAR")
-                {
-                    Canvas.Refresh();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "RESET")
-                {
-                    ResetAll();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "CIRCLE")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 2) { DisplayError("Parameter", lines[i], i); break; }
-
-                    shapeWidth = Convert.ToInt32(runCmd[1].Trim());
-                    DrawCircle();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "RECTANGLE")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 3) { DisplayError("Parameter", lines[i], i); break; }
-
-                    shapeWidth = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                    shapeHeight = Convert.ToInt32(runCmd[2].Trim());
-                    DrawRectangle();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "TRIANGLE")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 5) { DisplayError("Parameter", lines[i], i); break; }
-
-                    midX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                    midY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                    finalX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
-                    finalY = Convert.ToInt32(runCmd[4].Trim());
-                    DrawTriangle();
-                }
-                else if (runCmd[0].ToUpper().Trim() == "PEN")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 3) { DisplayError("Parameter", lines[i], i); break; }
-
-                    penSize = Convert.ToInt32(runCmd[2].Trim());
-
-                    //penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
-                    if (runCmd[1].ToUpper().Trim() == "BLUE") { penColor = 2; }
-                    else if (runCmd[1].ToUpper().Trim() == "GREEN") { penColor = 3; }
-                    else if (runCmd[1].ToUpper().Trim() == "RED") { penColor = 4; }
-                    else if (runCmd[1].ToUpper().Trim() == "YELLOW") { penColor = 5; }
-                    else { penColor = 1; }
-                }
-                else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 2) { DisplayError("Parameter", lines[i], i); break; }
-
-                    //fillOk  1 = true, 2 = false
-                    if (runCmd[1].ToUpper().Trim() == "ON") { fillOk = 1; }
-                    else { fillOk = 2; }
-                }
-                else if (runCmd[0].ToUpper().Trim() == "FILLCOLOR")
-                {
-                    //Check for numbers of parameter
-                    if (numParams != 2) { DisplayError("Parameter", lines[i], i); break; }
-
-                    if (runCmd[1].ToUpper().Trim() == "RED") { fillColor = Color.Red; }
-                    else if (runCmd[1].ToUpper().Trim() == "BLUE") { fillColor = Color.Blue; }
-                    else if (runCmd[1].ToUpper().Trim() == "GREEN") { fillColor = Color.Green; }
-                    else if (runCmd[1].ToUpper().Trim() == "YELLOW") { fillColor = Color.Yellow; }
-                    else { fillColor = Color.Gainsboro; }
-                }
+                if (runCmd[0].ToUpper().Trim() == "MOVETO") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "DRAWTO") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "CLEAR") { Canvas.Refresh(); }
+                else if (runCmd[0].ToUpper().Trim() == "RESET") { ResetAll(); }
+                else if (runCmd[0].ToUpper().Trim() == "CIRCLE") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "RECTANGLE") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "TRIANGLE") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "PEN") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "FILLCOLOR") { if (!CommandExecuted(lines[i], i)) { break; }; }
                 else if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
                 {
                     bool methodNotEnded = true;
@@ -312,7 +233,7 @@ namespace ASE_Component2
                 }
                 else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
                 {
-    
+
                 }
                 else
                 {
@@ -342,7 +263,7 @@ namespace ASE_Component2
         private int DisplayRunline(int i, string str)
         {
             txt_CurrentCommand.Text = "Line " + (i + 1).ToString() + ":   " + str;
-            return i+1 ;
+            return i + 1;
         }
 
         /// <summary>
@@ -439,8 +360,116 @@ namespace ASE_Component2
         }
         #endregion
 
-        // ------ Component 2 -------//
 
+        #region Component 2
+
+        //the following method is added to adjust the command to be called from within the myMethod.
+        private bool CommandExecuted(string cmdLine, int lineNumb)
+        {
+            string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            int numParams = runCmd.Length;
+            int i = lineNumb;
+            //bool isSuccess = true;
+            if (runCmd[0].ToUpper().Trim() == "MOVETO")
+            {
+                //Check for numbers of parameter
+                if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                intX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                intY = Convert.ToInt32(runCmd[2].Trim());
+
+                lbl_CurrentPosition.Text = "Current Position (" + runCmd[1] + " " + runCmd[2] + ")";
+            }
+            else if (runCmd[0].ToUpper().Trim() == "DRAWTO")
+            {
+                //Check for numbers of parameter
+                if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                finalX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                finalY = Convert.ToInt32(runCmd[2]);
+                DrawLine();
+            }
+            //else if (runCmd[0].ToUpper().Trim() == "CLEAR")
+            //{
+            //    Canvas.Refresh();
+            //}
+            //else if (runCmd[0].ToUpper().Trim() == "RESET")
+            //{
+            //    ResetAll();
+            //}
+            else if (runCmd[0].ToUpper().Trim() == "CIRCLE")
+            {
+                //Check for numbers of parameter
+                if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                shapeWidth = Convert.ToInt32(runCmd[1].Trim());
+                DrawCircle();
+            }
+            else if (runCmd[0].ToUpper().Trim() == "RECTANGLE")
+            {
+                //Check for numbers of parameter
+                if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                shapeWidth = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                shapeHeight = Convert.ToInt32(runCmd[2].Trim());
+                DrawRectangle();
+            }
+            else if (runCmd[0].ToUpper().Trim() == "TRIANGLE")
+            {
+                //Check for numbers of parameter
+                if (numParams != 5) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                midX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                midY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                finalX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                finalY = Convert.ToInt32(runCmd[4].Trim());
+                DrawTriangle();
+            }
+            else if (runCmd[0].ToUpper().Trim() == "PEN")
+            {
+                //Check for numbers of parameter
+                if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                penSize = Convert.ToInt32(runCmd[2].Trim());
+
+                //penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
+                if (runCmd[1].ToUpper().Trim() == "BLUE") { penColor = 2; }
+                else if (runCmd[1].ToUpper().Trim() == "GREEN") { penColor = 3; }
+                else if (runCmd[1].ToUpper().Trim() == "RED") { penColor = 4; }
+                else if (runCmd[1].ToUpper().Trim() == "YELLOW") { penColor = 5; }
+                else { penColor = 1; }
+            }
+            else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE")
+            {
+                //Check for numbers of parameter
+                if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                //fillOk  1 = true, 2 = false
+                if (runCmd[1].ToUpper().Trim() == "ON") { fillOk = 1; }
+                else { fillOk = 2; }
+            }
+            else if (runCmd[0].ToUpper().Trim() == "FILLCOLOR")
+            {
+                //Check for numbers of parameter
+                if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                if (runCmd[1].ToUpper().Trim() == "RED") { fillColor = Color.Red; }
+                else if (runCmd[1].ToUpper().Trim() == "BLUE") { fillColor = Color.Blue; }
+                else if (runCmd[1].ToUpper().Trim() == "GREEN") { fillColor = Color.Green; }
+                else if (runCmd[1].ToUpper().Trim() == "YELLOW") { fillColor = Color.Yellow; }
+                else { fillColor = Color.Gainsboro; }
+            }
+            else
+            {
+                DisplayError("Command", cmdLine, i);
+                //break;
+            }
+            return true;
+        }
+
+
+
+        //
 
         private int makeMyMethod(string[] lines, int lineNo)
         {
@@ -469,7 +498,7 @@ namespace ASE_Component2
             //}
 
 
-                return i;
+            return i;
         }
 
 
@@ -481,4 +510,5 @@ namespace ASE_Component2
 
 
     }
+    #endregion
 }
