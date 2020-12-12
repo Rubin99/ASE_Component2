@@ -26,22 +26,26 @@ namespace ASE_Component2
         /// </summary>        
         /// <param name="intX">It is the, current point - common for all the shapes</param>
         /// <param name="intY">It is the, current point - common for all the shapes</param>
-        /// <param name="finalX">Used for third x coordinate for triangle</param>
-        /// <param name="finalY">Used for third y coordinate for triangle</param>
-        /// <param name="midX">Used for second x coordinate for triangle</param>
-        /// <param name="midY">Used for second y coordinate for triangle</param>
-        /// <param name="shapeWidth">Used for recatangle and for circle(as radius)</param>
+        /// <param name="rightX">Used for third x coordinate for triangle</param>
+        /// <param name="rightY">Used for third y coordinate for triangle</param>
+        /// <param name="leftX">Used for second x coordinate for triangle</param>
+        /// <param name="leftY">Used for second y coordinate for triangle</param>
+        /// <param name="shapeWidth">Used for recatangle</param>
         /// <param name="shapeHeight">Used for Rectnangle</param>
+        /// <param name="shapeRadius">Used for circle</param>
 
         ShapeFactory factory = new ShapeFactory();
-        int intX = 0;
-        int intY = 0;
-        int finalX = 0;
-        int finalY = 0;
-        int midX = 0;
-        int midY = 0;
+        int intX = 0;        //Start Position X for all shape
+        int intY = 0;        //Start Position Y for all shape
+        int leftX = 0;        //Changed from midX
+        int leftY = 0;        //Changed from midY
+        int rightX = 0;     //Changed from finalX
+        int rightY = 0;     //Changed from finalY
+        int uptoX = 0;     // Added to distinguish end point of DrawTo line
+        int uptoY = 0;     // Added to distinguish end point of DrawTo line
         int shapeWidth = 0;
         int shapeHeight = 0;
+        int shapeRadius = 0;  //Added to distinguished radius 
         /// <summary>
         /// fillColor is an object created of the class Color.
         /// "gObj" is an object of Graphics class.
@@ -83,7 +87,7 @@ namespace ASE_Component2
             CmdList = CmdList + Environment.NewLine + "Draw basic shapes:";
             CmdList = CmdList + Environment.NewLine + "Rectangle  <width>, <height>";
             CmdList = CmdList + Environment.NewLine + "Circle <radius>";
-            CmdList = CmdList + Environment.NewLine + "Triangle LeftX, LeftY, RightX, RightY";
+            CmdList = CmdList + Environment.NewLine + "Triangle LeftX, LeftY, rightX, RightY";
             CmdList = CmdList + Environment.NewLine + "";
             CmdList = CmdList + Environment.NewLine + "Colours and fills";
             CmdList = CmdList + Environment.NewLine + "Pen  <colour>, <size>  e.g. pen red (Select either black or red or blue, or green or yellow ";
@@ -220,6 +224,8 @@ namespace ASE_Component2
                 else if (runCmd[0].ToUpper().Trim() == "PEN") { if (!CommandExecuted(lines[i], i)) { break; }; }
                 else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE") { if (!CommandExecuted(lines[i], i)) { break; }; }
                 else if (runCmd[0].ToUpper().Trim() == "FILLCOLOR") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "INCREASE") { if (!CommandExecuted(lines[i], i)) { break; }; }
+                else if (runCmd[0].ToUpper().Trim() == "DECREASE") { if (!CommandExecuted(lines[i], i)) { break; }; }
                 else if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
                 {
                     bool methodNotEnded = true;
@@ -233,7 +239,8 @@ namespace ASE_Component2
                 }
                 else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
                 {
-
+                    int CallFromLine = i;
+                    //ExeMethodCalled(chkCmdLine, i);
                 }
                 else
                 {
@@ -301,12 +308,13 @@ namespace ASE_Component2
         {
             intX = 0;
             intY = 0;
-            finalX = 0;
-            finalY = 0;
-            midX = 0;
-            midY = 0;
+            leftX = 0;
+            leftY = 0;
+            rightX = 0;
+            rightY = 0;
             shapeWidth = 0;
             shapeHeight = 0;
+            shapeRadius = 0;
 
             penColor = 1;
             penSize = 2;
@@ -325,7 +333,7 @@ namespace ASE_Component2
         {
             Shape s;
             s = factory.getShape("circle");
-            s.set(fillColor, intX, intY, shapeWidth, penSize, penColor, fillOk);
+            s.set(fillColor, intX, intY, shapeRadius, penSize, penColor, fillOk);
             s.draw(gObj);
         }
         /// <summary>
@@ -345,7 +353,8 @@ namespace ASE_Component2
         {
             Shape s;
             s = factory.getShape("triangle");
-            s.set(fillColor, intX, intY, midX, midY, finalX, finalY, penSize, penColor, fillOk);
+            //changes made in leftX, leftY, rightX, rightY
+            s.set(fillColor, intX, intY, leftX, leftY, rightX, rightY, penSize, penColor, fillOk);
             s.draw(gObj);
         }
         /// <summary>
@@ -355,7 +364,7 @@ namespace ASE_Component2
         {
             Shape s;
             s = factory.getShape("line");
-            s.set(fillColor, intX, intY, finalX, finalY, penSize, penColor);
+            s.set(fillColor, intX, intY, uptoX, uptoY, penSize, penColor);
             s.draw(gObj);
         }
         #endregion
@@ -385,24 +394,16 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                finalX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                finalY = Convert.ToInt32(runCmd[2]);
+                uptoX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                uptoY = Convert.ToInt32(runCmd[2]);
                 DrawLine();
             }
-            //else if (runCmd[0].ToUpper().Trim() == "CLEAR")
-            //{
-            //    Canvas.Refresh();
-            //}
-            //else if (runCmd[0].ToUpper().Trim() == "RESET")
-            //{
-            //    ResetAll();
-            //}
             else if (runCmd[0].ToUpper().Trim() == "CIRCLE")
             {
                 //Check for numbers of parameter
                 if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                shapeWidth = Convert.ToInt32(runCmd[1].Trim());
+                shapeRadius = Convert.ToInt32(runCmd[1].Trim());
                 DrawCircle();
             }
             else if (runCmd[0].ToUpper().Trim() == "RECTANGLE")
@@ -419,10 +420,10 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 5) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                midX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                midY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                finalX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
-                finalY = Convert.ToInt32(runCmd[4].Trim());
+                leftX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));          //Change from leftX
+                leftY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                rightX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                rightY = Convert.ToInt32(runCmd[4].Trim());
                 DrawTriangle();
             }
             else if (runCmd[0].ToUpper().Trim() == "PEN")
@@ -459,6 +460,40 @@ namespace ASE_Component2
                 else if (runCmd[1].ToUpper().Trim() == "YELLOW") { fillColor = Color.Yellow; }
                 else { fillColor = Color.Gainsboro; }
             }
+            else if (runCmd[0].ToUpper().Trim() == "INCREASE") { ChangeShapeSize(cmdLine, i); }
+            else if (runCmd[0].ToUpper().Trim() == "DECREASE") { ChangeShapeSize(cmdLine, i); }
+            else if (runCmd[0].ToUpper().Trim() == "ADD")
+            {
+                //ADD Radius Radius NumbToAdd  -> Result is Updated Radius
+                //You Can Add Radius, Width,  Height, LeftX, LeftY, RightX, RightY, and (intX and intY which are the start position)
+                //ADD varName Number ->
+
+                //Check for numbers of parameter
+                // if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
+                // CalcNewShapeSize(cmdLine, i);
+            }
+            else if (runCmd[0].ToUpper().Trim() == "DIVIDE")
+            {
+                //Divide radius NumOfRing DecreaseRadius
+            }
+            else if (runCmd[0].ToUpper().Trim() == "MINUS")
+            {
+            }
+            else if (runCmd[0].ToUpper().Trim() == "MULTIPLY")
+            {
+            }
+            else if (runCmd[0].ToUpper().Trim() == "new")
+            {
+            }
+            else if (runCmd[0].ToUpper().Trim() == "new")
+            {
+            }
+            else if (runCmd[0].ToUpper().Trim() == "new")
+            {
+            }
+            else if (runCmd[0].ToUpper().Trim() == "new")
+            {
+            }
             else
             {
                 DisplayError("Command", cmdLine, i);
@@ -467,9 +502,203 @@ namespace ASE_Component2
             return true;
         }
 
+        private void ChangeShapeSize(string cmdLine, int lineNum)
+        {
+            string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            int numParams = runCmd.Length;
+            int i = lineNum;
+
+            string vAction = runCmd[0].ToUpper().Trim();
+            string vName = runCmd[1].ToUpper().Trim();
+
+            //Increase Circle Radius
+
+            if (vName == "CIRCLE")
+            {
+                ////need to add error check
+                ////Check for numbers of parameter
+                //if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
+
+                int iNum = Convert.ToInt32(runCmd[2].Trim());
+                if (vAction == "INCREASE") { shapeRadius += iNum; }
+                else if (vAction == "DECREASE") { shapeRadius -= iNum; }
+                else { /*display error*/}
+                DrawCircle();
+            }
+            else if (vName == "RECTANGLE")
+            {
+                //Rectangle  <width>, <height>
+                // INCREASE rectangle 24, 24
+                //                uptoX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+
+                int iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int iHght = Convert.ToInt32(runCmd[3].Trim());
+
+                if (vAction == "INCREASE")
+                {
+                    shapeWidth += iWdth;
+                    shapeHeight += iHght;
+                }
+                else if (vAction == "DECREASE")
+                {
+                    shapeWidth -= iWdth;
+                    shapeHeight -= iHght;
+                }
+                else { /*display error*/}
+                DrawRectangle();
+            }
+            else if (vName == "TRIANGLE")
+            {
+                //Triangle LeftX, LeftY, RightX, RightY
+                // INCREASE Triangle LeftX, LeftY, RightX, RightY
+
+                int xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                int xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
+                int yRight = Convert.ToInt32(runCmd[5].Trim());
+
+
+                if (vAction == "INCREASE")
+                {
+                    leftX += xLeft;
+                    leftY += yLeft;
+                    rightX += xRight;
+                    rightY += yRight;
+                }
+                else if (vAction == "DECREASE")
+                {
+                    leftX += xLeft;
+                    leftY += yLeft;
+                    rightX += xRight;
+                    rightY += yRight;
+                }
+                else { /*display error*/}
+                DrawTriangle();
+            }
+            else if (vName == "DRAWTO")
+            {
+                //DrawTo <uptoX> <upToY>
+                //Increase DrawTo uptoX upToY
+
+                int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int yUpto = Convert.ToInt32(runCmd[3].Trim());
+
+                if (vAction == "INCREASE")
+                {
+                    uptoX += xUpto;
+                    uptoY += yUpto;
+                }
+                else if (vAction == "DECREASE")
+                {
+                    uptoX -= xUpto;
+                    uptoY -= yUpto;
+                }
+                else { /*display error*/}
+                DrawLine();
+            }
+            else if (vName == "MOVETO")
+            {
+                //DrawTo <uptoX> <upToY>
+                //Increase DrawTo uptoX upToY
+
+                int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int yUpto = Convert.ToInt32(runCmd[3].Trim());
+
+                if (vAction == "INCREASE")
+                {
+                    intX += xUpto;
+                    intY += yUpto;
+                }
+                else if (vAction == "DECREASE")
+                {
+                    intX -= xUpto;
+                    intY -= yUpto;
+                }
+                else { /*display error*/}
+                lbl_CurrentPosition.Text = "Current Position (" + intX + " " + intY + ")";
+            }
+        }
+
+        private void ExeMethodCalled(string[] lines, int CalledFromLineNo)
+        {
+            //string chkCmdLine = txt_Command.Text;
+            //string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            int numLines = lines.Length;
+            int i = CalledFromLineNo;
+            //
+            string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            int numParams = runCmd.Length;
+            if (runCmd[0].ToUpper().Trim() != "CALLMETHOD") { /*state error*/ return; }
+            string methodName = runCmd[1].ToUpper().Trim();
+
+            //Increase Circle Radius
+
+            //if (vName == "CIRCLE")
+            //{
+            //    ////need to add error check
+            //    ////Check for numbers of parameter
+            //    //if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
+
+            //    int iNum = Convert.ToInt32(runCmd[2].Trim());
+            //    if (vAction == "INCREASE") { shapeRadius += iNum; }
+            //    else if (vAction == "DECREASE") { shapeRadius -= iNum; }
+            //    else { /*display error*/}
+            //    DrawCircle();
+
+        }
+
+
+
+
+        //private void CalcNewShapeSize(string cmdLine, int lineNum)
+        //{
+        //    //ADD Radius Radius NumbToAdd  -> Result is Updated Radius
+        //    //You Can Add Radius, Width,  Height, LeftX, LeftY, RightX, RightY, and (intX and intY which are the start position)
+        //    //ADD varName Number ->
+
+        //    string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+        //    int numParams = runCmd.Length;
+        //    int i = lineNum;
+
+        //    string vAction = runCmd[0].ToUpper().Trim();
+        //    string vName = runCmd[1].Substring(0, runCmd[1].IndexOf(","));
+        //    int iNum = Convert.ToInt32(runCmd[4].Trim());
+
+        //    if (vName == "RADIUS")  { if (vAction == "ADD") { shapeRadius += iNum; }}
+        //    if (vName == "RADIUS")  { if (vAction == "MINUS") { shapeRadius -=  iNum; }}
+        //    if (vName == "WIDTH")  { if (vAction == "ADD") { shapeWidth += iNum; }}
+        //    if (vName == "WIDTH")  { if (vAction == "MINUS") { shapeWidth -=  iNum; }}
+        //    if (vName == "HEIGHT")  { if (vAction == "ADD") { shapeHeight += iNum; }}
+        //    if (vName == "HEIGHT")  { if (vAction == "MINUS") { shapeHeight -=  iNum; }}
+
+        //    if (vName == "UPTOX")  { if (vAction == "ADD") { uptoX += iNum; }}
+        //    if (vName == "UPTOX")  { if (vAction == "MINUS") { uptoX -=  iNum; }}
+        //    if (vName == "UPTOY")  { if (vAction == "ADD") { uptoY += iNum; }}
+        //    if (vName == "UPTOY")  { if (vAction == "MINUS") { uptoY -=  iNum; }}
+
+        //    if (vName == "STARTX")  { if (vAction == "ADD") { intX += iNum; }}
+        //    if (vName == "STARTX")  { if (vAction == "MINUS") { intX -=  iNum; }}
+        //    if (vName == "STARTY")  { if (vAction == "ADD") { intY += iNum; }}
+        //    if (vName == "STARTY")  { if (vAction == "MINUS") { intY -=  iNum; }}
+
+        //    if (vName == "LEFTX")  { if (vAction == "ADD") { leftX += iNum; }}
+        //    if (vName == "LEFTX")  { if (vAction == "MINUS") { leftX -=  iNum; }}
+        //    if (vName == "LEFTY")  { if (vAction == "ADD") { leftY += iNum; }}
+        //    if (vName == "LEFTY")  { if (vAction == "MINUS") { leftY -=  iNum; }}
+
+        //    if (vName == "RIGHTX")  { if (vAction == "ADD") { rightX += iNum; }}
+        //    if (vName == "RIGHTX")  { if (vAction == "MINUS") { rightX -=  iNum; }}
+        //    if (vName == "RIGHTY")  { if (vAction == "ADD") { rightY += iNum; }}
+        //    if (vName == "RIGHTY")  { if (vAction == "MINUS") { rightY -=  iNum; }}
+
+
+        //}
 
 
         //
+
+
+
 
         private int makeMyMethod(string[] lines, int lineNo)
         {
@@ -488,16 +717,6 @@ namespace ASE_Component2
 
             //    lbl_CurrentPosition.Text = "Current Position (" + runCmd[1] + " " + runCmd[2] + ")";
             //}
-
-
-            //for (int i = lineNo; i < numLines; i++)
-            //{
-            //    string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            //    int numParams = runCmd.Length;
-
-            //}
-
-
             return i;
         }
 
