@@ -46,9 +46,10 @@ namespace ASE_Component2
         int shapeWidth = 0;
         int shapeHeight = 0;
         int shapeRadius = 0;  //Added to distinguished radius 
-        bool RadiusAsParam = false;     //Added to be used in Method in component 2
-        bool WidthAsParam = false;     //Added to be used in Method in component 2
-        bool HeightAsParam = false;     //Added to be used in Method in component 2
+        bool circleParamExist = false;     //Added to be used in Method in component 2
+        bool rectangleParamExist = false;     //Added to be used in Method in component 2
+        bool triangleParamExist = false;     //Added to be used in Method in component 2
+        bool lineParamExist = false;     //Added to be used in Method in component 2
         //neede to add triangle & drawto
         /// <summary>
         /// fillColor is an object created of the class Color.
@@ -222,59 +223,20 @@ namespace ASE_Component2
 
                 //The following code is updated to avoid the unnecessary duplication so that the same method can be from inside
                 //Method, loop and if conditions.
-                /*
-                if (runCmd[0].ToUpper().Trim() == "MOVETO")  { if (!CommandExecuted(lines[i], i)) { break; } ; }
-                else if (runCmd[0].ToUpper().Trim() == "DRAWTO")  { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "CLEAR")  {  Canvas.Refresh(); }
-                else if (runCmd[0].ToUpper().Trim() == "RESET")  {  ResetAll(); }
-                else if (runCmd[0].ToUpper().Trim() == "CIRCLE")  { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "RECTANGLE")  { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "TRIANGLE") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "PEN") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "FILLCOLOR") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "INCREASE") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "DECREASE") { if (!CommandExecuted(lines[i], i)) { break; }; }
-                else if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
-                {
-                    bool methodNotEnded = true;
-                    while (methodNotEnded)
-                    {
-                        i++;
-                        runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                        if (runCmd[0].ToUpper().Trim() == "ENDMETHOD") { break; }
-                    }
-                    lineNo = i;
-                }
-                else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
-                {
-                    int CallFromLine = i;
-                    ExeMethodCalled(lines, i);
-                    i = CallFromLine;
-                }
-                else
-                {
-                    DisplayError("Command", lines[i], i);
-                    break;
-                }
-            */
-
                 if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
                 {
-                    bool methodNotEnded = true;
-                    while (methodNotEnded)
-                    {
-                        i++;
-                        runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                        if (runCmd[0].ToUpper().Trim() == "ENDMETHOD") { break; }
-                    }
-                    lineNo = i;
+                    i = GenEndLineNo("ENDMETHOD", i);
                 }
                 else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
                 {
                     int CallFromLine = i;
                     ExeMethodCalled(lines, i);
                     i = CallFromLine;
+                }
+                else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
+                {
+                    //int CallFromLine = i;
+                    i = RunLoop(i);
                 }
                 else
                 {
@@ -286,9 +248,7 @@ namespace ASE_Component2
 
                 //exit after completing this command
                 if (!RunAllCommand) { lineNo = DisplayRunline(i, lines[i]); break; } //*
-
             }
-
 
             if (lineNo >= numLines)
             {
@@ -364,6 +324,10 @@ namespace ASE_Component2
             txt_CurrentCommand.Text = "";
 
             mStart = mEnd = NumRepeat = 0;
+            circleParamExist = false;
+            rectangleParamExist = false;
+            triangleParamExist = false;
+            lineParamExist = false;
         }
 
         /// <summary>
@@ -662,14 +626,6 @@ namespace ASE_Component2
 
         private void ExeMethodCalled(string[] lines, int CalledFromLineNo)
         {
-            //           //List of Variable Names to be Used in the parameter		
-            //           intX,intY,leftX,leftY, rightX, rightY, uptoX, uptoY, shapeWidth, shapeHeight, shapeRadius
-            //           fillColor, penColor, penSize, fillOk
-
-            ////      Number of time for loop to repeat
-            //           NumRepeat
-
-
             //string[] lines is the array of lines from the command text box
             int numLines = lines.Length;                        //total numbers of lines in the command box
             int i = CalledFromLineNo;                           //line no from which the method was called.
@@ -690,27 +646,36 @@ namespace ASE_Component2
             //update variables as per the parameter assighed.
             UpdateVarAsPerParams(methodStart, methodCall);
 
-            // int j = mStart;
-            //while (true)
-            //{
-            //    for (int j = mStart; j < mEnd; j++)
-            //    {
-            //        string[] runCmd = lines[j].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            //    }
-            //    j = mStart;
 
-            //}
             for (int j = mStart + 1; j < mEnd; j++)
             {
                 //private bool CommandExecuted(string cmdLine, int lineNumb)
                 string[] runCmd = lines[j].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                if (!CommandExecuted(lines[j], j))
+                if (runCmd[0].ToUpper().Trim() == "CIRCLE" && circleParamExist)
                 {
-                    break;
+                    DrawCircle();
+                }
+                else if (runCmd[0].ToUpper().Trim() == "RECTANGLE" & rectangleParamExist)
+                {
+                    DrawRectangle();
+                }
+                else if (runCmd[0].ToUpper().Trim() == "TRIANGLE" & triangleParamExist)
+                {
+                    DrawTriangle();
+                }
+                else if (runCmd[0].ToUpper().Trim() == "DRAWTO" & lineParamExist)
+                {
+                    DrawLine();
+                }
+                else
+                {
+                    if (!CommandExecuted(lines[j], j))
+                    {
+                        break;
+                    }
                 }
 
             }
-
 
         }
 
@@ -726,6 +691,12 @@ namespace ASE_Component2
             if (methodStart.Length != numParams) { /* Error in Parameter mismatch*/ return; }
 
             if (numParams == 2) { return; }              //This method does not have any parameter
+
+            //Check if the parameter consist the component of shape
+            circleParamExist = false;
+            rectangleParamExist = false;
+            triangleParamExist = false;
+            lineParamExist = false;
 
             for (int i = 2; i < numParams; i++)
             {
@@ -753,7 +724,7 @@ namespace ASE_Component2
                 }
                 else if (methodStart[i].ToUpper().Trim() == "LEFTX" || methodStart[i].ToUpper().Trim() == "LEFTX,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         leftX = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -761,10 +732,11 @@ namespace ASE_Component2
                     {
                         leftX = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    triangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "LEFTY" || methodStart[i].ToUpper().Trim() == "LEFTY,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         leftY = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -772,10 +744,11 @@ namespace ASE_Component2
                     {
                         leftY = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    triangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "RIGHTX" || methodStart[i].ToUpper().Trim() == "RIGHTX,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         rightX = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -783,10 +756,11 @@ namespace ASE_Component2
                     {
                         rightX = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    triangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "RIGHTY" || methodStart[i].ToUpper().Trim() == "RIGHTY,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         rightY = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -794,10 +768,11 @@ namespace ASE_Component2
                     {
                         rightY = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    triangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "UPTOX" || methodStart[i].ToUpper().Trim() == "UPTOX,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         uptoX = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -805,10 +780,11 @@ namespace ASE_Component2
                     {
                         uptoX = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    lineParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "UPTOY" || methodStart[i].ToUpper().Trim() == "UPTOY,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         uptoY = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -816,10 +792,11 @@ namespace ASE_Component2
                     {
                         uptoY = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    lineParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "WIDTH" || methodStart[i].ToUpper().Trim() == "WIDTH,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         shapeWidth = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -827,10 +804,11 @@ namespace ASE_Component2
                     {
                         shapeWidth = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    rectangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "HEIGHT" || methodStart[i].ToUpper().Trim() == "HEIGHT,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         shapeHeight = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -838,10 +816,11 @@ namespace ASE_Component2
                     {
                         shapeHeight = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    rectangleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "RADIUS" || methodStart[i].ToUpper().Trim() == "RADIUS,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         shapeRadius = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -849,10 +828,11 @@ namespace ASE_Component2
                     {
                         shapeRadius = Convert.ToInt32(methodCall[i].Trim());
                     }
+                    circleParamExist = true;
                 }
                 else if (methodStart[i].ToUpper().Trim() == "NUMREPEAT" || methodStart[i].ToUpper().Trim() == "NUMREPEAT,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         NumRepeat = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -863,7 +843,7 @@ namespace ASE_Component2
                 }
                 else if (methodStart[i].ToUpper().Trim() == "PENSIZE" || methodStart[i].ToUpper().Trim() == "PENSIZE,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         penSize = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
                     }
@@ -874,7 +854,7 @@ namespace ASE_Component2
                 }
                 else if (methodStart[i].ToUpper().Trim() == "FILLCOLOR" || methodStart[i].ToUpper().Trim() == "FILLCOLOR,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         string colorName = methodCall[i].Substring(0, methodCall[i].IndexOf(","));
                         FillColorToVar(colorName);
@@ -887,7 +867,7 @@ namespace ASE_Component2
                 }
                 else if (methodStart[i].ToUpper().Trim() == "PENCOLOR" || methodStart[i].ToUpper().Trim() == "PENCOLOR,")
                 {
-                    if (methodStart[i].Contains(","))
+                    if (methodCall[i].Contains(","))
                     {
                         //PenColorToNum(runCmd[1].ToUpper().Trim());
                         // intX = Convert.ToInt32(methodCall[i].Substring(0, methodCall[i].IndexOf(",")));
@@ -901,9 +881,8 @@ namespace ASE_Component2
                 }
                 else if (methodStart[i].ToUpper().Trim() == "FILLSHAPE" || methodStart[i].ToUpper().Trim() == "FILLSHAPE,")
                 {
-                    //fillOk  1 = true, 2 = false
-                    string chkFillOk;
-                    if (methodStart[i].Contains(","))
+                    string chkFillOk;         //fillOk  1 = true, 2 = false
+                    if (methodCall[i].Contains(","))
                     {
                         chkFillOk = methodCall[i].Substring(0, methodCall[i].IndexOf(","));
                     }
@@ -962,39 +941,112 @@ namespace ASE_Component2
             return foundName;
         }
 
-
-
-
-
-
-
-        private int makeMyMethod(string[] lines, int lineNo)
+        private int RunLoop(int lineNum)
         {
-            int i = lineNo;
-            int numLines = lines.Length;
-            if (lines[lineNo].ToUpper().Trim() != "METHOD") { return i; }    //return if the first line is not the Start of the method.
+            //Loop startNum endNum increment
+            //EndLoop
+            string chkCmdLine = txt_Command.Text;
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
+            int endLine = GenEndLineNo("ENDLOOP", lineNum);
+            //int numLines = lines.Length;
 
-            //if (runCmd[0].ToUpper().Trim() == "MOVETO")
-            //{
-            //    //Check for numbers of parameter
-            //    if (numParams != 3) { DisplayError("Parameter", lines[i], i); break; }
+            string[] runCmd = lines[lineNum].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
 
-            //    intX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-            //    intY = Convert.ToInt32(runCmd[2].Trim());
+            //Loop startNum endNum increment
+            //int startLine = lineNum;
+            int numParams = runCmd.Length;
+            int startNum = 0;
+            int endNum = 0;
+            int incrNum = 1;
+            if (numParams == 4 || numParams == 3)
+            {
+                if (runCmd[1].Contains(","))
+                {
+                    startNum = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                }
+                else
+                {
+                    startNum = Convert.ToInt32(runCmd[1].Trim());
+                }
+                if (runCmd[2].Contains(","))
+                {
+                    endNum = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else
+                {
+                    endNum = Convert.ToInt32(runCmd[2].Trim());
+                }
+                if (numParams == 4)
+                {
+                    if (runCmd[3].Contains(","))
+                    {
+                        incrNum = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                    }
+                    else
+                    {
+                        incrNum = Convert.ToInt32(runCmd[3].Trim());
+                    }
+                }
 
-            //    lbl_CurrentPosition.Text = "Current Position (" + runCmd[1] + " " + runCmd[2] + ")";
-            //}
-            return i;
+            }
+
+            //for (int i = startAt; i < numLines; i++)
+            int i = lineNum + 1;
+            while (true)
+            {
+                runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (runCmd[0].ToUpper().Trim() == "ENDLOOP")         //Added for component 2
+                {
+                    i = lineNum + 1;
+                }
+                else if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
+                {
+                    //Call if Block
+                    //int r = GenEndLineNo(string endType, int lineStartNo)
+                    int r = GenEndLineNo("ENDIF", i);
+
+                    for (int j = i; j < r++;)
+                    {
+
+                    }
+                }
+                else
+                {
+                    //int CallFromLine = i;
+                    //ExeMethodCalled(lines, i);
+                    CommandExecuted(lines[i], i);
+                }
+                startNum += incrNum;
+                if (startNum > endNum) { break; }
+            }
+            return endLine;
         }
 
-
-        private void CallMyMethod()
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            this.Close();
         }
 
+        private int GenEndLineNo(string endType, int lineStartNo)
+        {
+            string chkCmdLine = txt_Command.Text;
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            int i = lineStartNo;
+            int endLineNo = 0;
 
+            bool methodNotEnded = true;
+            while (methodNotEnded)
+            {
+                i++;
+                string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                if (runCmd[0].ToUpper().Trim() == endType) { endLineNo = i; break; }
+            }
+
+
+            return endLineNo;
+        }
 
     }
     #endregion
