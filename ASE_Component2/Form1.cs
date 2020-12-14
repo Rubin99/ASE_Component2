@@ -225,7 +225,7 @@ namespace ASE_Component2
                 //Method, loop and if conditions.
                 if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
                 {
-                    i = GenEndLineNo("ENDMETHOD", i);
+                    i = GetEndLineNo("ENDMETHOD", i);
                 }
                 else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
                 {
@@ -235,8 +235,8 @@ namespace ASE_Component2
                 }
                 else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
                 {
-                    //int CallFromLine = i;
-                    i = RunLoop(i);
+                    //This loop is being called from normal command line. It may also be called from Method
+                    i = RunLoop(i, false);
                 }
                 else
                 {
@@ -436,14 +436,11 @@ namespace ASE_Component2
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
 
                 penSize = Convert.ToInt32(runCmd[2].Trim());
-
-                ////penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
-                //if (runCmd[1].ToUpper().Trim() == "BLUE") { penColor = 2; }
-                //else if (runCmd[1].ToUpper().Trim() == "GREEN") { penColor = 3; }
-                //else if (runCmd[1].ToUpper().Trim() == "RED") { penColor = 4; }
-                //else if (runCmd[1].ToUpper().Trim() == "YELLOW") { penColor = 5; }
-                //else { penColor = 1; }
                 PenColorToNum(runCmd[1].ToUpper().Trim());
+            }
+            else if (runCmd[0].ToUpper().Trim() == "NEXTPENCOLOR")
+            {
+                NextPenColor();
             }
             else if (runCmd[0].ToUpper().Trim() == "FILLSHAPE")
             {
@@ -466,10 +463,19 @@ namespace ASE_Component2
                 //else { fillColor = Color.Gainsboro; }
                 FillColorToVar(runCmd[1]);
             }
+            else if (runCmd[0].ToUpper().Trim() == "NEXTFILLCOLOR")
+            {
+                NextFillColor();
+            }
             else if (runCmd[0].ToUpper().Trim() == "INCREASE") { ChangeShapeSize(cmdLine, i); }
             else if (runCmd[0].ToUpper().Trim() == "DECREASE") { ChangeShapeSize(cmdLine, i); }
             else if (runCmd[0].ToUpper().Trim() == "CLEAR") { Canvas.Refresh(); }
             else if (runCmd[0].ToUpper().Trim() == "RESET") { ResetAll(); }
+            //else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
+            //{
+            //    //Loop at this point is being called from Method
+            //    i = RunLoop(i, true);
+            //}
             else
             {
                 DisplayError("Command", cmdLine, i);
@@ -501,10 +507,23 @@ namespace ASE_Component2
             //Class must be created and call classs
         }
 
-        //Need to develop for Component 2
-        private Color GetNextColor()
+        //Change fill color
+        private Color NextFillColor()
         {
-            return Color.Red;
+            if (fillColor == Color.Blue) { fillColor = Color.Green; }
+            else if (fillColor == Color.Green) { fillColor = Color.Red; }
+            else if (fillColor == Color.Red) { fillColor = Color.Yellow; }
+            else if (fillColor == Color.Yellow) { fillColor = Color.Blue; }
+            else { fillColor = Color.Red; }
+            return fillColor;
+        }
+
+        private int NextPenColor()
+        {
+            if (penColor < 5) { penColor++; }
+            else { penColor = 1; }
+
+            return penColor;
         }
 
         private void ChangeShapeSize(string cmdLine, int lineNum)
@@ -666,6 +685,10 @@ namespace ASE_Component2
                 else if (runCmd[0].ToUpper().Trim() == "DRAWTO" & lineParamExist)
                 {
                     DrawLine();
+                }
+                else if (runCmd[0].ToUpper().Trim() == "LOOP")
+                {
+                    j = RunLoop(j, true); ;
                 }
                 else
                 {
@@ -941,23 +964,24 @@ namespace ASE_Component2
             return foundName;
         }
 
-        private int RunLoop(int lineNum)
+        private int RunLoop(int lineNum, bool isFromMethod)
         {
             //Loop startNum endNum increment
             //EndLoop
             string chkCmdLine = txt_Command.Text;
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-            int endLine = GenEndLineNo("ENDLOOP", lineNum);
+            int endLine = GetEndLineNo("ENDLOOP", lineNum);
             //int numLines = lines.Length;
 
             string[] runCmd = lines[lineNum].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string check = runCmd[0].ToUpper().Trim();
 
             //Loop startNum endNum increment
             //int startLine = lineNum;
             int numParams = runCmd.Length;
-            int startNum = 0;
-            int endNum = 0;
+            int startNum = 1;
+            int endNum = 1;
             int incrNum = 1;
             if (numParams == 4 || numParams == 3)
             {
@@ -996,52 +1020,81 @@ namespace ASE_Component2
             while (true)
             {
                 runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                check = runCmd[0].ToUpper().Trim();
+                numParams = runCmd.Length;
 
                 if (runCmd[0].ToUpper().Trim() == "ENDLOOP")         //Added for component 2
                 {
+                    startNum += incrNum;
+                    if (startNum > endNum) { break; }
                     i = lineNum + 1;
+                    //Refresh the command line to be executed
+                    runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 }
-                else if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
+
+                if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
                 {
                     //Call if Block
-                    //int r = GenEndLineNo(string endType, int lineStartNo)
-                    int r = GenEndLineNo("ENDIF", i);
+                    //int r = GetEndLineNo(string endType, int lineStartNo)
+                    int r = GetEndLineNo("ENDIF", i);
 
                     for (int j = i; j < r++;)
                     {
 
                     }
                 }
+                else if (isFromMethod)
+                {
+
+                    if (runCmd[0].ToUpper().Trim() == "CIRCLE" && circleParamExist && numParams == 1)
+                    {
+                        DrawCircle();
+                    }
+                    else if (runCmd[0].ToUpper().Trim() == "RECTANGLE" & rectangleParamExist && numParams == 1)
+                    {
+                        DrawRectangle();
+                    }
+                    else if (runCmd[0].ToUpper().Trim() == "TRIANGLE" & triangleParamExist && numParams == 1)
+                    {
+                        DrawTriangle();
+                    }
+                    else if (runCmd[0].ToUpper().Trim() == "DRAWTO" & lineParamExist && numParams == 1)
+                    {
+                        DrawLine();
+                    }
+                    else
+                    {
+                        if (!CommandExecuted(lines[i], i))
+                        {
+                            break;
+                        }
+                    }
+                }
                 else
                 {
-                    //int CallFromLine = i;
-                    //ExeMethodCalled(lines, i);
                     CommandExecuted(lines[i], i);
                 }
-                startNum += incrNum;
-                if (startNum > endNum) { break; }
+                i++;
             }
-            return endLine;
+            return endLine + 1;
         }
 
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
-        private int GenEndLineNo(string endType, int lineStartNo)
+        private int GetEndLineNo(string endType, int lineStartNo)
         {
             string chkCmdLine = txt_Command.Text;
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
             int i = lineStartNo;
             int endLineNo = 0;
+            string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            //string chkEnd = "Chk";
 
             bool methodNotEnded = true;
             while (methodNotEnded)
             {
                 i++;
-                string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 if (runCmd[0].ToUpper().Trim() == endType) { endLineNo = i; break; }
+
             }
 
 
