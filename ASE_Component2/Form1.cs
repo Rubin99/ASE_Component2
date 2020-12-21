@@ -71,6 +71,32 @@ namespace ASE_Component2
         int mStart, mEnd;         //variable for Line Number where the method starts and ends
         int NumRepeat = 0;     //variable to be used in case of loop
 
+        //Added to check Command Syntax  before the program is run 
+        string[,] arrCommand = new string[19, 2] { { "Clear", "1" },
+                                                                            { "Reset", "1" },
+                                                                            { "MoveTo", "3" },
+                                                                            { "DrawTo", "3" },
+                                                                            { "Circle", "2" },
+                                                                            { "Triangle", "5" },
+                                                                            { "Rectangle", "3" },
+                                                                            { "Pen", "3" },
+                                                                            { "FillColor", "2" },
+                                                                            { "FillShape", "2" },
+                                                                            { "StartMethod", "2" },
+                                                                            { "EndMethod", "1" },
+                                                                            { "CallMethod", "2" },
+                                                                            { "Loop", "4" },
+                                                                            { "EndLoop", "1" },
+                                                                            { "Increase", "2" },
+                                                                            { "Decrease", "2" },
+                                                                            { "NextPenColor", "1" },
+                                                                            { "NextFillColor", "1" },
+        };
+
+        //Added to allows variables to be used in loop and as parameters to draw commands
+        string[] arrParams = { "intX", "intY", "leftX", "leftY", "rightX", "rightY", "uptoX", "uptoY", "Width", "Height",
+                                            "Radius", "fillColor", "penColor", "penSize", "fillShape", "numRepeat" };
+
         // Loads immediately after the form is opened.
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -134,9 +160,9 @@ namespace ASE_Component2
                 lineNo = 0;
                 btn_Run.Text = "Run";
             }
+
+            CheckCommandExist();
             RunCommand(true);
-            //reset line number to initial position
-            // lineNo = 0;
         }
         /// <summary>
         /// Click event for the Clear canvas button.
@@ -167,6 +193,12 @@ namespace ASE_Component2
         /// <param name="e"></param>
         private void btn_LoadFile_Click(object sender, EventArgs e)
         {
+            LoadFile();
+        }
+
+        //Open or Load the existing Text file in the text box
+        private void LoadFile()
+        {
             OpenFileDialog of = new OpenFileDialog();
             of.Filter = "TXT(*.TXT) | *.txt";
 
@@ -181,6 +213,11 @@ namespace ASE_Component2
         /// Saves the commands in txt file.
         /// </summary>
         private void btn_SaveFile_Click(object sender, EventArgs e)
+        {
+            SaveFile();
+        }
+        //Save the Contents of text box into a new text file
+        private void SaveFile()
         {
             SaveFileDialog sf = new SaveFileDialog();
             sf.Filter = "TXT(*.TXT) | *.txt";
@@ -280,17 +317,23 @@ namespace ASE_Component2
         private void DisplayError(string errFrom, string str, int i)
         {
             //For Command Error - list[0] is LineNo
-            string title, msg;
+            string title = errFrom, msg = "";
 
             if (errFrom == "Command")
             {
                 title = "Command Error";
-                msg = "The following line has a command error. Please go through the command list and correct the error ";
+                if (i > 0)
+                {
+                    msg = "The following line has a command error. Please go through the command list and correct the error ";
+                }
             }
-            else
+            else if (errFrom == "Parameter")
             {
                 title = "Parameter Error";
-                msg = "The following line has a Parameter error. Please go through the command list. Check for the number of the parameter, comma(,) or space and correct the error";
+                if (i > 0)
+                {
+                    msg = "The following line has a Parameter error. Please go through the command list. Check for the number of the parameter, comma(,) or space and correct the error";
+                }
             }
             msg = msg + Environment.NewLine + Environment.NewLine + "Line " + (i + 1).ToString() + ":  " + str;
             MessageBox.Show(msg, title);
@@ -382,6 +425,10 @@ namespace ASE_Component2
             string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             int numParams = runCmd.Length;
             int i = lineNumb;
+
+            ////Check whether the command syntax i.e. command and required number of parament
+            //if (!CheckCommandExist(cmdLine, i)) { return false; }
+
             //bool isSuccess = true;
             if (runCmd[0].ToUpper().Trim() == "MOVETO")
             {
@@ -471,15 +518,166 @@ namespace ASE_Component2
             else if (runCmd[0].ToUpper().Trim() == "DECREASE") { ChangeShapeSize(cmdLine, i); }
             else if (runCmd[0].ToUpper().Trim() == "CLEAR") { Canvas.Refresh(); }
             else if (runCmd[0].ToUpper().Trim() == "RESET") { ResetAll(); }
-            //else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
-            //{
-            //    //Loop at this point is being called from Method
-            //    i = RunLoop(i, true);
-            //}
             else
             {
                 DisplayError("Command", cmdLine, i);
                 //break;
+            }
+
+            //Need to display line Number - make RunAllCommand a global var
+            return true;
+        }
+
+        //check Command and Command Syntax i.e. whether it contains the right number of parameters
+        private bool CheckCommandExist()
+        {
+            string chkCmdLine = txt_Command.Text;
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            int numLines = lines.Length;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                int numParams = runCmd.Length;
+                bool cmdNotFound = true;
+                for (int j = 0; j < arrCommand.GetLength(0); j++)
+                {
+                    if (runCmd[0].ToUpper().Trim() == arrCommand[j, 0].ToUpper().Trim())
+                    {
+                        if (runCmd[0].ToUpper().Trim() == "STARTMETHOD" || runCmd[0].ToUpper().Trim() == "CALLMETHOD")
+                        {
+                            CheckParameter(i);
+                        }
+                        else if (runCmd[0].ToUpper().Trim() == "INCREASE" || runCmd[0].ToUpper().Trim() == "DECREASE")
+                        {
+                            CheckIncrease(i);
+                        }
+
+                        //int check = Convert.ToInt32(arrCommand[j, 1]);
+                        else if (Convert.ToInt32(arrCommand[j, 1]) != numParams)
+                        {
+                            DisplayError("Parameter", lines[i], i);
+                            return false;
+                        }
+                        cmdNotFound = false;
+                        break;
+                    }
+                }
+                if (cmdNotFound)
+                {
+                    DisplayError("Command", lines[i], i);
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private bool CheckCommandLine()
+        {
+            //?
+            //?
+            return true;
+        }
+
+        //Check the parameter names in StartMethod & CallMethod
+        private bool CheckParameter(int lineNumb)
+        {
+            string chkCmdLine = txt_Command.Text;
+            //Create string[] lines as an array of lines from the command text box
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            int numLines = lines.Length;                        //total numbers of lines in the command box
+
+            //Check whether the passed on line number is the StartMethod or Call Method.
+            string[] methodChk = lines[lineNumb].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+
+            //Find the Index of the Method Exist. 
+            string methodName = methodChk[1].ToUpper().Trim();
+            if (!FindMethodName(lines, methodName)) { DisplayError("Command", lines[lineNumb], lineNumb); return false; }
+
+            //Check whether the program has been called from StartMethod line or CallMethod line
+            bool isCalledFromStart = true;
+            int lineCalledMethod = 0;
+            if (lineNumb != mStart) { lineCalledMethod = lineNumb; isCalledFromStart = false; }
+
+            //Check parameter names for their validity in StartMethod
+            methodChk = lines[mStart].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            int numOfParam = methodChk.Length;
+            if (numOfParam > 2)           //Only 2 elements in array means it does not contain any parameters
+            {
+                for (int i = 2; i < numOfParam; i++)
+                {
+                    string paramChk = methodChk[i].ToUpper().Trim();
+                    bool paramsNotFound = true;
+                    if (paramChk.Contains(","))
+                    {
+                        paramChk = paramChk.Substring(0, paramChk.IndexOf(","));
+                    }
+                    for (int j = 0; j < arrParams.Length; j++)
+                    {
+                        if (paramChk == arrParams[j].ToUpper().Trim())
+                        {
+                            paramsNotFound = false;
+                            break;
+                        }
+                    }
+                    if (paramsNotFound)
+                    {
+                        DisplayError("Command", lines[mStart], i);
+                        return false;
+                    }
+                }
+
+            }
+
+            //if the line number is not CallMethod then find the line No for the callMethods
+            if (isCalledFromStart)
+            {
+                bool noCallMethod = true;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    //check the Command line
+                    methodChk = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if (methodChk[0].ToUpper().Trim() == "CALLMETHOD" && methodChk[1].ToUpper().Trim() == methodName)
+                    {
+                        lineCalledMethod = i;
+                        noCallMethod = false;
+                        break;
+                    }
+                }
+                if (noCallMethod)
+                {
+                    string msg = "Call Method " + methodName + " does Not exist";
+                    DisplayError("Command", msg, -1); return false;
+                }
+            }
+
+            //check the length of the elements in CallMethod 
+            methodChk = lines[lineCalledMethod].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            if (numOfParam != methodChk.Length) { DisplayError("Parameter", lines[lineNumb], lineNumb); return false; }
+
+            return true;
+        }
+
+        private bool CheckIncrease(int lineNumb)
+        {
+            string chkCmdLine = txt_Command.Text;
+            //Create string[] lines as an array of lines from the command text box
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+            //Check whether the passed on line number is the StartMethod or Call Method.
+            string[] methodChk = lines[lineNumb].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string vName = methodChk[1].ToUpper().Trim();
+            int numParam = 0;
+            if (vName == "CIRCLE") { numParam = 3; }
+            else if (vName == "RECTANGLE") { numParam = 4; }
+            else if (vName == "TRIANGLE") { numParam = 6; }
+            else if (vName == "DRAWTO") { numParam = 4; }
+            else if (vName == "MOVETO") { numParam = 4; }
+
+            if (numParam != methodChk.Length)
+            {
+                DisplayError("Command", lines[lineNumb], lineNumb);
+                return false;
             }
             return true;
         }
@@ -503,8 +701,6 @@ namespace ASE_Component2
             else if (ColorName.ToUpper().Trim() == "RED") { penColor = 4; }
             else if (ColorName.ToUpper().Trim() == "YELLOW") { penColor = 5; }
             else { penColor = 1; }
-            //Need to write method for changing Number to Color and use it in shape for that
-            //Class must be created and call classs
         }
 
         //Change fill color
@@ -535,26 +731,15 @@ namespace ASE_Component2
             string vAction = runCmd[0].ToUpper().Trim();
             string vName = runCmd[1].ToUpper().Trim();
 
-            //Increase Circle Radius
-
             if (vName == "CIRCLE")
             {
-                ////need to add error check
-                ////Check for numbers of parameter
-                //if (numParams != 2) { DisplayError("Parameter", cmdLine, i); return false; }
-
                 int iNum = Convert.ToInt32(runCmd[2].Trim());
                 if (vAction == "INCREASE") { shapeRadius += iNum; }
                 else if (vAction == "DECREASE") { shapeRadius -= iNum; }
-                else { /*display error*/}
                 DrawCircle();
             }
             else if (vName == "RECTANGLE")
             {
-                //Rectangle  <width>, <height>
-                // INCREASE rectangle 24, 24
-                //                uptoX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-
                 int iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int iHght = Convert.ToInt32(runCmd[3].Trim());
 
@@ -568,19 +753,14 @@ namespace ASE_Component2
                     shapeWidth -= iWdth;
                     shapeHeight -= iHght;
                 }
-                else { /*display error*/}
                 DrawRectangle();
             }
             else if (vName == "TRIANGLE")
             {
-                //Triangle LeftX, LeftY, RightX, RightY
-                // INCREASE Triangle LeftX, LeftY, RightX, RightY
-
                 int xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
                 int xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
                 int yRight = Convert.ToInt32(runCmd[5].Trim());
-
 
                 if (vAction == "INCREASE")
                 {
@@ -596,14 +776,10 @@ namespace ASE_Component2
                     rightX += xRight;
                     rightY += yRight;
                 }
-                else { /*display error*/}
                 DrawTriangle();
             }
             else if (vName == "DRAWTO")
             {
-                //DrawTo <uptoX> <upToY>
-                //Increase DrawTo uptoX upToY
-
                 int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int yUpto = Convert.ToInt32(runCmd[3].Trim());
 
@@ -617,14 +793,10 @@ namespace ASE_Component2
                     uptoX -= xUpto;
                     uptoY -= yUpto;
                 }
-                else { /*display error*/}
                 DrawLine();
             }
             else if (vName == "MOVETO")
             {
-                //DrawTo <uptoX> <upToY>
-                //Increase DrawTo uptoX upToY
-
                 int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int yUpto = Convert.ToInt32(runCmd[3].Trim());
 
@@ -638,7 +810,6 @@ namespace ASE_Component2
                     intX -= xUpto;
                     intY -= yUpto;
                 }
-                else { /*display error*/}
                 lbl_CurrentPosition.Text = "Current Position (" + intX + " " + intY + ")";
             }
         }
@@ -651,16 +822,21 @@ namespace ASE_Component2
 
             //Check whether the passed on line number is the Call Method.
             string[] methodCall = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            if (methodCall[0].ToUpper().Trim() != "CALLMETHOD") { /*state error*/ return; }
+            //if (methodCall[0].ToUpper().Trim() != "CALLMETHOD") { /*state error*/ return; }
             int numParams = methodCall.Length;
 
             //Find the Index of the Method called
             string methodName = methodCall[1].ToUpper().Trim();
-            if (!FindMethodName(lines, methodName)) { /* Error Msg Stating Method Name Not Found*/ return; }
+            if (!FindMethodName(lines, methodName))
+            {
+                string msg = methodName + " does Not Exist";
+                DisplayError("Command", msg, -1);
+                return;
+            }
 
             //Compare whether the number of parameter matches between the startMethod and Called Method
             string[] methodStart = lines[mStart].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            if (methodStart.Length != numParams) { /* Error in Parameter mismatch*/ return; }
+            if (methodStart.Length != numParams) { DisplayError("Parameter", lines[i], i); return; }
 
             //update variables as per the parameter assighed.
             UpdateVarAsPerParams(methodStart, methodCall);
@@ -917,10 +1093,6 @@ namespace ASE_Component2
                     if (chkFillOk.ToUpper().Trim() == "ON" || chkFillOk.ToUpper().Trim() == "TRUE") { fillOk = 1; }
                     else { fillOk = 2; }
                 }
-                else
-                {
-                    //Error Note parameter name not valid. Please check the list of valid parameter
-                }
             }
 
         }
@@ -957,9 +1129,9 @@ namespace ASE_Component2
 
             if (foundName && mEnd == 0)
             {
-                /* Show the Error Message Stating EndMethod Not Declared */
+                string msg = "EndMethod Not Declared";
+                DisplayError("Method Error", msg, -1); return false;
             }
-
 
             return foundName;
         }
@@ -1077,6 +1249,47 @@ namespace ASE_Component2
                 i++;
             }
             return endLine + 1;
+        }
+
+        private int RunIF(int lineNum)
+        {
+            //IF var1 exCompare var2
+            //EndIf
+            string chkCmdLine = txt_Command.Text;
+            string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+            int endLine = GetEndLineNo("ENDIF", lineNum);
+
+            string[] runCmd = lines[lineNum].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            //Check whether  the Comparasion is true;
+            //?
+            //?
+
+            //execute command till the EndIF
+            //int i = lineNum + 1;
+
+
+            for (int i = lineNum + 1; endLine > i++;)
+            {
+
+            }
+
+            return endLine;
+        }
+
+        private void openLoadFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadFile();
+        }
+
+        private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFile();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         private int GetEndLineNo(string endType, int lineStartNo)
