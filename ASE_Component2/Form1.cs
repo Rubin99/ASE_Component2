@@ -65,6 +65,7 @@ namespace ASE_Component2
         int fillOk = 1;        //fillOk  1 = true, 2 = false
 
         int lineNo = 0;
+        bool RunAllCommand = false;  //Moved to make it accessible by all the method
         Graphics gObj;
 
         //string[] myMethodArr;
@@ -72,7 +73,7 @@ namespace ASE_Component2
         int NumRepeat = 0;     //variable to be used in case of loop
 
         //Added to check Command Syntax  before the program is run 
-        string[,] arrCommand = new string[19, 2] { { "Clear", "1" },
+        string[,] arrCommand = new string[21, 2] { { "Clear", "1" },
                                                                             { "Reset", "1" },
                                                                             { "MoveTo", "3" },
                                                                             { "DrawTo", "3" },
@@ -91,6 +92,8 @@ namespace ASE_Component2
                                                                             { "Decrease", "2" },
                                                                             { "NextPenColor", "1" },
                                                                             { "NextFillColor", "1" },
+                                                                            { "IF", "4" },
+                                                                            { "ENDIF", "1" },
         };
 
         //Added to allows variables to be used in loop and as parameters to draw commands
@@ -101,7 +104,7 @@ namespace ASE_Component2
         private void Form1_Load(object sender, EventArgs e)
         {
             gObj = Canvas.CreateGraphics(); //initialized
-            LoadCommandList();              // Display command with syntax
+            LoadCommandList("Command");              // Display command with syntax
             ResetAll();
         }
 
@@ -109,25 +112,38 @@ namespace ASE_Component2
         /// <summary>
         /// Method to list the commands to be dispalyed in txt_Cmd_List
         /// </summary>
-        private void LoadCommandList()
+        private void LoadCommandList(string displayInTextBox)
         {
-            string CmdList = "Basic drawing commands (all commands are case insensitive)";
-            CmdList = CmdList + Environment.NewLine + "MoveTo <x>, <y>";
-            CmdList = CmdList + Environment.NewLine + "DrawTo <x> <y>";
-            CmdList = CmdList + Environment.NewLine + "Clear";
-            CmdList = CmdList + Environment.NewLine + "Reset";
-            CmdList = CmdList + Environment.NewLine + "";
-            CmdList = CmdList + Environment.NewLine + "Draw basic shapes:";
-            CmdList = CmdList + Environment.NewLine + "Rectangle  <width>, <height>";
-            CmdList = CmdList + Environment.NewLine + "Circle <radius>";
-            CmdList = CmdList + Environment.NewLine + "Triangle LeftX, LeftY, rightX, RightY";
-            CmdList = CmdList + Environment.NewLine + "";
-            CmdList = CmdList + Environment.NewLine + "Colours and fills";
-            CmdList = CmdList + Environment.NewLine + "Pen  <colour>, <size>  e.g. pen red (Select either black or red or blue, or green or yellow ";
-            CmdList = CmdList + Environment.NewLine + "FillShape <on/off>";
-            CmdList = CmdList + Environment.NewLine + "FillColor <colour> e.g. pen red (Select either red or blue, or green or yellow";
+            string dispL = "";
+            if (displayInTextBox == "Command")
+            {
+                dispL = "BASIC COMMAND (all commands are case insensitive)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Clear                            (Clears the canvas)";
+                dispL += Environment.NewLine + "Reset                           (reset all the variable to default value)";
+                dispL += Environment.NewLine + "MoveTo <x>, <y>      (Moves the start position to this point)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Draw basic shapes:";
+                dispL += Environment.NewLine + "DrawTo <x> <y>      (Draw line to this point from the Start Position)";
+                dispL += Environment.NewLine + "Circle <radius>          (Draw Circle)";
+                dispL += Environment.NewLine + "Rectangle  <width>, <height>          (Draw Rectangle)";
+                dispL += Environment.NewLine + "Triangle <LeftX>, <LeftY>, <rightX>, <RightY>  (Draw Triangle with Start, Left & Right point)";
+                dispL += Environment.NewLine + "Increase <Shape Name with Shape Parametes>  (Increases the size by the Number Enter)";
+                dispL += Environment.NewLine + "Decrease <Shape Name with Shape Parametes>  (Decrease the size by the Number Enter)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Colours and fills";
+                dispL += Environment.NewLine + "FillColor <colour> e.g. pen red  - Color-> Red, Blue, Green, Yellow";
+                dispL += Environment.NewLine + "FillShape <on/off>       (fill the Shape with the Fill Color)";
+                dispL += Environment.NewLine + "Pen  <colour>, <size>  (e.g. pen red 4 - Color-> Black, Red, Blue, Green, Yellow)";
+                dispL += Environment.NewLine + "NextPenColor       (Changes the Pen Color )";
+                dispL += Environment.NewLine + "NextFillColor        (Changes the Fill Color)";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "  ()";
+                dispL += Environment.NewLine + "";
 
-            txt_Cmd_List.Text = CmdList;
+            }
+            //           txt_Cmd_List.Text = CmdList;
+            txt_Cmd_List.Text = dispL;
         }
 
         private void Canvas_Paint(object sender, PaintEventArgs e)
@@ -144,7 +160,8 @@ namespace ASE_Component2
         /// <param name="e"></param>
         private void btn_Run_Click(object sender, EventArgs e)
         {
-            RunCommand(false);  //RunAllComands = false
+            RunAllCommand = false;  //Allow only one command to be executed at a time
+            RunCommand();
         }
         /// <summary>
         ///  Click event for the button btn_Execute.
@@ -161,8 +178,9 @@ namespace ASE_Component2
                 btn_Run.Text = "Run";
             }
 
-            CheckCommandExist();
-            RunCommand(true);
+            CheckCommandExist();   //Check all the Syntax of the command before executing
+            RunAllCommand = true;
+            RunCommand();
         }
         /// <summary>
         /// Click event for the Clear canvas button.
@@ -184,6 +202,25 @@ namespace ASE_Component2
         {
             txt_Command.Text = "";
             txt_CurrentCommand.Text = "";
+        }
+        //Added to check whether the commands are written with the Correct Syntax
+        private void btn_ChkCode_Click(object sender, EventArgs e)
+        {
+
+            if (txt_Command.Text.Trim().Length > 0)  //Command has been Typed
+            {
+                if (CheckCommandExist())
+                {
+                    string msg = "Syntax Checked and is found to be OK";
+                    DisplayError("Command Check", msg, -1);
+                }
+            }
+            else
+            {
+                string msg = "Please Enter Your Command Before Checking the Syntax";
+                DisplayError("Command Check", msg, -1);
+            }
+
         }
         /// <summary>
         /// Clcik event to for the button btn_LoadFile.
@@ -236,12 +273,12 @@ namespace ASE_Component2
         /// Reads and Executes the command written in the command box either one line at a time or the whole code..
         /// It identifies the command and executes it.
         /// </summary>
-        /// <param name="RunAllCommand">Boolean to run the command one line ata time or the entire code.</param>
+        /// <param name="RunAllCommand">Boolean to run the command one line at a time or the entire code.</param>
         /// <param name="lines">array of strings to that holds the line of code</param>
         /// <param name="runCmd">Array that holds the command and oparameter of each line.</param>
         /// <param name="numLines">Reads the length of the array lines</param>
         /// <param name="numParams">Reads the lenght of the array runCmd</param>
-        private void RunCommand(bool RunAllCommand)
+        private void RunCommand()
         {
             string chkCmdLine = txt_Command.Text;
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
@@ -252,47 +289,63 @@ namespace ASE_Component2
             {
                 btn_Run.Text = "Next";
             }
-
-            for (int i = lineNo; i < numLines; i++)
+            try
             {
-                string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                int numParams = runCmd.Length;
+                for (int i = lineNo; i < numLines; i++)
+                {
+                    string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    int numParams = runCmd.Length;
 
-                //The following code is updated to avoid the unnecessary duplication so that the same method can be from inside
-                //Method, loop and if conditions.
-                if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
-                {
-                    i = GetEndLineNo("ENDMETHOD", i);
-                }
-                else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
-                {
-                    int CallFromLine = i;
-                    ExeMethodCalled(lines, i);
-                    i = CallFromLine;
-                }
-                else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
-                {
-                    //This loop is being called from normal command line. It may also be called from Method
-                    i = RunLoop(i, false);
-                }
-                else
-                {
-                    if (!CommandExecuted(lines[i], i))
+                    //The following code is updated to avoid the unnecessary duplication so that the same method can be from inside
+                    //Method, loop and if conditions.
+                    if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
                     {
-                        break;
+                        i = GetEndLineNo("ENDMETHOD", i);
                     }
+                    else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
+                    {
+                        int CallFromLine = i;
+                        ExeMethodCalled(lines, i);
+                        i = CallFromLine;
+                    }
+                    else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
+                    {
+                        //This loop is being called from normal command line. It may also be called from Method
+                        i = RunLoop(i, false);
+                    }
+                    else if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
+                    {
+                        //This loop is being called from normal command line. It may also be called from Method
+                        i = RunIF(i);
+                    }
+                    else
+                    {
+                        if (!CommandExecuted(lines[i], i))
+                        {
+                            break;
+                        }
+                    }
+
+                    //exit after completing this command
+                    if (!RunAllCommand) { lineNo = DisplayRunline(i, lines[i]); break; } //*
                 }
-
-                //exit after completing this command
-                if (!RunAllCommand) { lineNo = DisplayRunline(i, lines[i]); break; } //*
             }
-
-            if (lineNo >= numLines)
+            catch (System.Exception ex)
             {
-                lineNo = 0;
-                btn_Run.Text = "Run";
-                txt_CurrentCommand.Text = "";
+                MessageBox.Show("Exception catch here - details  : " + ex.ToString());
             }
+            finally
+            {
+                if (lineNo >= numLines)
+                {
+                    lineNo = 0;
+                    btn_Run.Text = "Run";
+                    txt_CurrentCommand.Text = "";
+                }
+            }
+
+
+
         }
 
         #region Component 1 - simple methods and methods to draw Shape 
@@ -304,6 +357,8 @@ namespace ASE_Component2
         /// <returns>Returns the line number of the command</returns>
         private int DisplayRunline(int i, string str)
         {
+            //Check whether Message needs to be Displayed in the Current command Text
+            if (i + 1 == 0) { return 0; }
             txt_CurrentCommand.Text = "Line " + (i + 1).ToString() + ":   " + str;
             return i + 1;
         }
@@ -335,9 +390,17 @@ namespace ASE_Component2
                     msg = "The following line has a Parameter error. Please go through the command list. Check for the number of the parameter, comma(,) or space and correct the error";
                 }
             }
-            msg = msg + Environment.NewLine + Environment.NewLine + "Line " + (i + 1).ToString() + ":  " + str;
+            //Check whether line Number Needs to be mentioned
+            if (i + 1 == 0)
+            {
+                msg = msg + str;
+            }
+            else
+            {
+                msg = msg + Environment.NewLine + Environment.NewLine + "Line " + (i + 1).ToString() + ":  " + str;
+            }
             MessageBox.Show(msg, title);
-
+            if (i + 1 == 0) { return; }
             txt_CurrentCommand.Text = "Line " + (i + 1).ToString() + ":   " + str;
 
         }
@@ -426,8 +489,8 @@ namespace ASE_Component2
             int numParams = runCmd.Length;
             int i = lineNumb;
 
+
             ////Check whether the command syntax i.e. command and required number of parament
-            //if (!CheckCommandExist(cmdLine, i)) { return false; }
 
             //bool isSuccess = true;
             if (runCmd[0].ToUpper().Trim() == "MOVETO")
@@ -435,9 +498,13 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                intX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
-                intY = Convert.ToInt32(runCmd[2].Trim());
+                if (runCmd[1].Contains(","))
+                {
+                    intX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                }
+                else { intX = Convert.ToInt32(runCmd[1]); }
 
+                intY = Convert.ToInt32(runCmd[2].Trim());
                 lbl_CurrentPosition.Text = "Current Position (" + runCmd[1] + " " + runCmd[2] + ")";
             }
             else if (runCmd[0].ToUpper().Trim() == "DRAWTO")
@@ -445,7 +512,11 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                uptoX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                if (runCmd[1].Contains(","))
+                {
+                    uptoX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                }
+                else { uptoX = Convert.ToInt32(runCmd[1]); }
                 uptoY = Convert.ToInt32(runCmd[2]);
                 DrawLine();
             }
@@ -462,7 +533,12 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                shapeWidth = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                if (runCmd[1].Contains(","))
+                {
+                    shapeWidth = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                }
+                else { shapeWidth = Convert.ToInt32(runCmd[1]); }
+
                 shapeHeight = Convert.ToInt32(runCmd[2].Trim());
                 DrawRectangle();
             }
@@ -471,9 +547,25 @@ namespace ASE_Component2
                 //Check for numbers of parameter
                 if (numParams != 5) { DisplayError("Parameter", cmdLine, i); return false; }
 
-                leftX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));          //Change from leftX
-                leftY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                rightX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                if (runCmd[1].Contains(","))
+                {
+                    leftX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));
+                }
+                else { leftX = Convert.ToInt32(runCmd[1]); }
+                if (runCmd[2].Contains(","))
+                {
+                    leftY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else { leftY = Convert.ToInt32(runCmd[2]); }
+                if (runCmd[3].Contains(","))
+                {
+                    rightX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                }
+                else { rightX = Convert.ToInt32(runCmd[3]); }
+
+                //leftX = Convert.ToInt32(runCmd[1].Substring(0, runCmd[1].IndexOf(",")));          //Change from leftX
+                //leftY = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                //rightX = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
                 rightY = Convert.ToInt32(runCmd[4].Trim());
                 DrawTriangle();
             }
@@ -481,9 +573,13 @@ namespace ASE_Component2
             {
                 //Check for numbers of parameter
                 if (numParams != 3) { DisplayError("Parameter", cmdLine, i); return false; }
-
+                string penColr = runCmd[1].ToUpper().Trim();
+                if (penColr.Contains(","))
+                {
+                    penColr = penColr.Substring(0, penColr.IndexOf(","));
+                }
+                PenColorToNum(penColr);
                 penSize = Convert.ToInt32(runCmd[2].Trim());
-                PenColorToNum(runCmd[1].ToUpper().Trim());
             }
             else if (runCmd[0].ToUpper().Trim() == "NEXTPENCOLOR")
             {
@@ -572,12 +668,12 @@ namespace ASE_Component2
             return true;
         }
 
-        private bool CheckCommandLine()
-        {
-            //?
-            //?
-            return true;
-        }
+        //private bool CheckCommandLine()
+        //{
+        //    //?
+        //    //?
+        //    return true;
+        //}
 
         //Check the parameter names in StartMethod & CallMethod
         private bool CheckParameter(int lineNumb)
@@ -740,7 +836,13 @@ namespace ASE_Component2
             }
             else if (vName == "RECTANGLE")
             {
-                int iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int iWdth;
+                if (runCmd[2].Contains(","))
+                {
+                    iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else { iWdth = Convert.ToInt32(runCmd[2]); }
+                //int iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int iHght = Convert.ToInt32(runCmd[3].Trim());
 
                 if (vAction == "INCREASE")
@@ -757,9 +859,28 @@ namespace ASE_Component2
             }
             else if (vName == "TRIANGLE")
             {
-                int xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                int yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
-                int xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
+                int xLeft;
+                int yLeft;
+                int xRight;
+                if (runCmd[2].Contains(","))
+                {
+                    xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else { xLeft = Convert.ToInt32(runCmd[2]); }
+                if (runCmd[3].Contains(","))
+                {
+                    yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                }
+                else { yLeft = Convert.ToInt32(runCmd[3]); }
+                if (runCmd[4].Contains(","))
+                {
+                    xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
+                }
+                else { xRight = Convert.ToInt32(runCmd[4]); }
+
+                //int xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                //int yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
+                //int xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
                 int yRight = Convert.ToInt32(runCmd[5].Trim());
 
                 if (vAction == "INCREASE")
@@ -780,7 +901,14 @@ namespace ASE_Component2
             }
             else if (vName == "DRAWTO")
             {
-                int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int xUpto;
+                if (runCmd[2].Contains(","))
+                {
+                    xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else { xUpto = Convert.ToInt32(runCmd[2]); }
+
+                //int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int yUpto = Convert.ToInt32(runCmd[3].Trim());
 
                 if (vAction == "INCREASE")
@@ -797,7 +925,13 @@ namespace ASE_Component2
             }
             else if (vName == "MOVETO")
             {
-                int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                int xUpto;
+                if (runCmd[2].Contains(","))
+                {
+                    xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
+                }
+                else { xUpto = Convert.ToInt32(runCmd[2]); }
+                //int xUpto = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 int yUpto = Convert.ToInt32(runCmd[3].Trim());
 
                 if (vAction == "INCREASE")
@@ -864,7 +998,11 @@ namespace ASE_Component2
                 }
                 else if (runCmd[0].ToUpper().Trim() == "LOOP")
                 {
-                    j = RunLoop(j, true); ;
+                    j = RunLoop(j, true);
+                }
+                else if (runCmd[0].ToUpper().Trim() == "IF")
+                {
+                    j = RunIF(j);
                 }
                 else
                 {
@@ -1206,14 +1344,7 @@ namespace ASE_Component2
 
                 if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
                 {
-                    //Call if Block
-                    //int r = GetEndLineNo(string endType, int lineStartNo)
-                    int r = GetEndLineNo("ENDIF", i);
-
-                    for (int j = i; j < r++;)
-                    {
-
-                    }
+                    i = RunIF(i);
                 }
                 else if (isFromMethod)
                 {
@@ -1253,28 +1384,454 @@ namespace ASE_Component2
 
         private int RunIF(int lineNum)
         {
-            //IF var1 exCompare var2
-            //EndIf
+            //return retLineNum
+            //int retLineNum = 0;
+            int returnValue = 0;    //returnValue =>  0 -> true, 1->false & 2->false
+
             string chkCmdLine = txt_Command.Text;
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
             int endLine = GetEndLineNo("ENDIF", lineNum);
-
-            string[] runCmd = lines[lineNum].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            //Check whether  the Comparasion is true;
-            //?
-            //?
-
-            //execute command till the EndIF
-            //int i = lineNum + 1;
-
-
-            for (int i = lineNum + 1; endLine > i++;)
+            if (endLine == 0)
             {
+                string msg = "EndIf Not Declared";
+                DisplayError("EndIf Error", msg, -1);
+                return endLine;
+            }
+            string[] runCmd = lines[lineNum].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            if (runCmd.Length != 4)
+            {
+                string msg = "There should be only 4 words in If statement";
+                DisplayError("Method Error", msg, -1);
+                return endLine;
+            }
+            //IF params Compare Var (var may be numeric or other param)
+            returnValue = IfCompare(runCmd);
+            //Continue only if the return Value = 0 i.e. true
+            if (returnValue == 0)
+            {
+                // Continue until endif is meet
+                for (int i = lineNum + 1; i < endLine; i++)
+                {
+                    CommandExecuted(lines[i], i);
+                }
+            }
+            return endLine;
+        }
 
+        private int IfCompare(string[] ifLine)
+        {
+            //return value 0 -> true, 1 -> false and 2-> error
+            int returnValue = 0;
+            bool paramExist = false;
+            string paramIf = ifLine[1].ToUpper().Trim();
+            if (paramIf.Contains(",")) { paramIf = paramIf.Substring(0, paramIf.IndexOf(",")); }
+
+            //Check whether the if param exist
+            for (int j = 0; j < arrParams.Length; j++)
+            {
+                if (paramIf == arrParams[j].ToUpper().Trim())
+                {
+                    paramExist = true;
+                    break;
+                }
+            }
+            if (!paramExist)
+            {
+                string msg = "parameter for IF statement does not Exist";
+                DisplayError("Parameter", msg, -1);
+                return 2;
             }
 
-            return endLine;
+            //string[] cmpIf = { "=", ">", "<", "!=" };
+            //Check whether the proper Variable Comparision Symbol used
+            string cmpIf = ifLine[2].Trim();
+            if (cmpIf.Contains(",")) { cmpIf = cmpIf.Substring(0, cmpIf.IndexOf(",")); }
+            if (cmpIf != "=" && cmpIf != "==" && cmpIf != ">" && cmpIf != "<" && cmpIf != "!=")
+            {
+                string msg = "IF statement does not contain proper Comparision Symbol";
+                DisplayError("IF statement Error", msg, -1);
+                return 2;
+            }
+
+            //Check whether the Var (var may be numeric or other param)
+            int varNum;
+            string varIf = ifLine[3].ToUpper().Trim();
+            if (varIf.Contains(",")) { varIf = varIf.Substring(0, varIf.IndexOf(",")); }
+            //isNumeric = int.TryParse(str, out i);
+            bool isNumeric = int.TryParse(varIf, out varNum);
+
+            //Compare the IF Statement
+            //paramIf cmpIf varNum varIf
+            if (paramIf.ToUpper().Trim() == "FILLCOLOR")
+            {
+                //string[] cmpIf = { "=", ">", "<", "!=" };
+                string colfill = fillColor.ToString().ToUpper(); // example colfill = "COLOR[GREEN]"
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    //if (str.Contains("TOP") == true)
+                    if (colfill.Contains(varIf)) { returnValue = 0; }
+                    else { returnValue = 1; }
+                    //if (varIf == fillColor.ToString().ToUpper()) { returnValue = 0; }
+                    //else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (!colfill.Contains(varIf)) { returnValue = 0; }
+                    else { returnValue = 1; }
+                    //if (varIf != fillColor.ToString().ToUpper()) { returnValue = 0; }
+                    //else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "PENCOLOR")
+            {
+                int colorNum = 1;
+                if (varIf.ToUpper().Trim() == "BLUE") { colorNum = 2; }
+                else if (varIf.ToUpper().Trim() == "GREEN") { colorNum = 3; }
+                else if (varIf.ToUpper().Trim() == "RED") { colorNum = 4; }
+                else if (varIf.ToUpper().Trim() == "YELLOW") { colorNum = 5; }
+                else if (varIf.ToUpper().Trim() == "BLACK") { colorNum = 1; }
+
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (penColor == colorNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (penColor != colorNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf.ToUpper().Trim() == "FILLSHAPE")
+            {
+                //int fillOk = 1;        //fillOk  1 = true, 2 = false
+                int iffillShapeOk = 2;
+                if (varIf.ToUpper().Trim() == "ON" || varIf.ToUpper().Trim() == "TRUE") { iffillShapeOk = 1; }
+
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (fillOk == iffillShapeOk) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (fillOk != iffillShapeOk) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { return returnValue = 2; }
+            }
+            else if (paramIf == "INTX")
+            {
+                ///int intX = 0;        //Start Position X for all shape
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (intX == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (intX != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (intX > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (intX < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "INTY")
+            {
+                //int intY = 0;        //Start Position Y for all shape
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (intY == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (intY != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (intY > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (intY < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "LEFTX")
+            {
+                //int leftX = 0;        //Changed from midX
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (leftX == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (leftX != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (leftX > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (leftX < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "LEFTY")
+            {
+                //int leftY = 0;        //Changed from midY
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (leftY == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (leftY != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (leftY > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (leftY < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "RIGHTX")
+            {
+                //int rightX = 0;     //Changed from finalX
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (rightX == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (rightX != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (rightX > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (rightX < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "RIGHTY")
+            {
+                //int rightY = 0;     //Changed from finalY
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (rightY == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (rightY != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (rightY > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (rightY < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "UPTOX")
+            {
+                //int uptoX = 0;     // Added to distinguish end point of DrawTo line
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (uptoX == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (uptoX != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (uptoX > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (uptoX < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "UPTOY")
+            {
+                //int uptoY = 0;     // Added to distinguish end point of DrawTo line
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (uptoY == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (uptoY != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (uptoY > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (uptoY < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "WIDTH")
+            {
+                //int shapeWidth = 0;
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (shapeWidth == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (shapeWidth != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (shapeWidth > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (shapeWidth < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "HEIGHT")
+            {
+                //int shapeHeight = 0;
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (shapeHeight == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (shapeHeight != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (shapeHeight > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (shapeHeight < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "RADIUS")
+            {
+                //int shapeRadius = 0;  
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (shapeRadius == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (shapeRadius != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (shapeRadius > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (shapeRadius < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+            else if (paramIf == "PENSIZE")
+            {
+                //int penSize = 2;
+                if (cmpIf == "=" || cmpIf == "==")
+                {
+                    if (penSize == varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "!=")
+                {
+                    if (penSize != varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == ">")
+                {
+                    if (penSize > varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else if (cmpIf == "<")
+                {
+                    if (penSize < varNum) { returnValue = 0; }
+                    else { returnValue = 1; }
+                }
+                else { returnValue = 2; }
+            }
+
+            if (returnValue == 2)
+            {
+                string msg = "IF statement does not contain proper Comparision Symbol";
+                DisplayError("IF statement Error", msg, -1);
+                return 2;
+            }
+
+            return returnValue;
         }
 
         private void openLoadFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1296,6 +1853,7 @@ namespace ASE_Component2
         {
             string chkCmdLine = txt_Command.Text;
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            int totalLine = lines.Length;
             int i = lineStartNo;
             int endLineNo = 0;
             string[] runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -1307,7 +1865,12 @@ namespace ASE_Component2
                 i++;
                 runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 if (runCmd[0].ToUpper().Trim() == endType) { endLineNo = i; break; }
-
+                if (i == totalLine)
+                {
+                    string msg = endType + " Not Found";
+                    DisplayError("Block End Error", msg, -1);
+                    break;
+                }
             }
 
 
