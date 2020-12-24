@@ -1,0 +1,19 @@
+Clear
+reset
+moveto 200, 10
+fillcolor Green
+pen Green 2
+
+fillshape on
+triangle 150, 75, 250, 75
+
+moveto 200, 50
+increase triangle -25, 75, 25, 75
+
+moveto 200, 100
+increase triangle -25, 75, 25, 75
+
+fillcolor yellow
+moveto 190, 225
+Rectangle 20, 100
+

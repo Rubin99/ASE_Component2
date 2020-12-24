@@ -104,6 +104,7 @@ namespace ASE_Component2
         private void Form1_Load(object sender, EventArgs e)
         {
             gObj = Canvas.CreateGraphics(); //initialized
+                                            //            LoadCommandList("Command");              // Display command with syntax
             LoadCommandList("Command");              // Display command with syntax
             ResetAll();
         }
@@ -115,6 +116,8 @@ namespace ASE_Component2
         private void LoadCommandList(string displayInTextBox)
         {
             string dispL = "";
+            string dispTitle = "Command List with Syntax";
+
             if (displayInTextBox == "Command")
             {
                 dispL = "BASIC COMMAND (all commands are case insensitive)";
@@ -137,12 +140,110 @@ namespace ASE_Component2
                 dispL += Environment.NewLine + "Pen  <colour>, <size>  (e.g. pen red 4 - Color-> Black, Red, Blue, Green, Yellow)";
                 dispL += Environment.NewLine + "NextPenColor       (Changes the Pen Color )";
                 dispL += Environment.NewLine + "NextFillColor        (Changes the Fill Color)";
-                dispL += Environment.NewLine + "";
-                dispL += Environment.NewLine + "  ()";
-                dispL += Environment.NewLine + "";
-
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "StartMethod <MethodName><parameter1>, <parameter 2>, .......";
+                dispL += Environment.NewLine + "EndMethod        (Every StartMethod must have EndMethod)";
+                dispL += Environment.NewLine + " CallMethod <Method Name>        (Needed to call Method)";
+                dispL += Environment.NewLine + "(StarMethod can have none, one or many parameters But parameter name must be one of the name listed in Parameter List)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Loop <start No>, <End No>, <Increment No>      (eg Loop 1, 5, 1)";
+                dispL += Environment.NewLine + "EndLoop                     (Every Loop must have EndLoop)";
+                dispL += Environment.NewLine + "(Loop command can be used with or without parameter. For the missing parameter, it will use the default value which are 1, 1, & 1. Loop can also be used inside the Method)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "IF <Parameter> <Comparision Symbol> <integer/Var>";
+                dispL += Environment.NewLine + "Endif       (IF command must have EndIF)";
+                dispL += Environment.NewLine + "(Parameter must be one of the name listed in Parameter List. ";
+                dispL += Environment.NewLine + "Comparision symbols are =, ==, !=, >, <. Values of all parameters are integer.";
+                dispL += Environment.NewLine + "Except for parameter fillColor and penColor is the name of the Color and for fillShape is <on/off> )";
+                dispTitle = "Command List with Syntax";
             }
-            //           txt_Cmd_List.Text = CmdList;
+            else if (displayInTextBox == "Parameter")
+            {
+                dispL = "List of Parameter and/or Variable Name (all commands are case insensitive)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "intX, intY, leftX, leftY, rightX, rightY, uptoX, uptoY, Width, Height, Radius, penSize, fillColor, penColor, fillShape";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "intX, intY";
+                dispL += Environment.NewLine + "(These are the initial or current or start position of the point in the canvas.";
+                dispL += Environment.NewLine + "It is used with MoveTo command. e.g. MoveTo <intX>, <intY> and with Increase MoveTo <intX>, <intY>";
+                dispL += Environment.NewLine + "These parameter name can be used in StartMethod or IF command )";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "leftX, leftY, rightX, rightY ";
+                dispL += Environment.NewLine + "These are the parameter of triangle. Start point being the first corner. Left and Right being the second and third corner";
+                dispL += Environment.NewLine + "These can be used as the parameter name in StartMethod and IF statement";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "uptoX, uptoY";
+                dispL += Environment.NewLine + "These are the parameters used with DrawTo. It draw a line from start point upto this point";
+                dispL += Environment.NewLine + "These can be used as the parameter name in StartMethod and IF statement";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Width, Height";
+                dispL += Environment.NewLine + "These are the parameters used with Rectangle. Rectangle is drawn from the start point having these width and Height";
+                dispL += Environment.NewLine + "These can be used as the parameter name in StartMethod and IF statement";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Radius";
+                dispL += Environment.NewLine + "This parameter is used in drawing a circle having this radius . The center of the radius is at intX+radius, intY+radius from start point";
+                dispL += Environment.NewLine + "These can be used as the parameter name in StartMethod and IF statement";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "fillColor, penColor, penSize, fillShape";
+                dispL += Environment.NewLine + "These can be used as the parameter name in StartMethod and IF statement";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispTitle = "List of parameters";
+            }
+            else if (displayInTextBox == "Bulls Eye")
+            {
+                dispL = "Example Bull's Eye (Method & Loop Test)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Clear";
+                dispL += Environment.NewLine + "reset";
+                dispL += Environment.NewLine + "moveto 70, 20";
+                dispL += Environment.NewLine + "pen red 10";
+                dispL += Environment.NewLine + "fillshape on";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "StartMethod myCircle radius";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "Loop 1 4 1";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "If Radius > 50";
+                dispL += Environment.NewLine + "decrease circle 50";
+                dispL += Environment.NewLine + "increase moveto 50, 50";
+                dispL += Environment.NewLine + "EndIF";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "nextPenColor";
+                dispL += Environment.NewLine + "nextfillcolor";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "EndLoop";
+                dispL += Environment.NewLine + "EndMethod";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "callMethod myCircle 225";
+
+                dispTitle = "Example -> Bull's Eye";
+            }
+            else if (displayInTextBox == "Christmas Tree")
+            {
+                dispL = "Example Christmas Tree (Simple Test)";
+                dispL += Environment.NewLine + "___________________________________________________";
+                dispL += Environment.NewLine + "Clear";
+                dispL += Environment.NewLine + "reset";
+                dispL += Environment.NewLine + "fillcolor Green";
+                dispL += Environment.NewLine + "pen Green 2";
+                dispL += Environment.NewLine + "fillshape on";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "moveto 200, 10";
+                dispL += Environment.NewLine + "triangle 150, 75, 250, 75";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "moveto 200, 50";
+                dispL += Environment.NewLine + "increase triangle -25, 75, 25, 75";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "moveto 200, 100";
+                dispL += Environment.NewLine + "increase triangle -25, 75, 25, 75";
+                dispL += Environment.NewLine + "";
+                dispL += Environment.NewLine + "fillcolor yellow";
+                dispL += Environment.NewLine + "moveto 190, 225";
+                dispL += Environment.NewLine + "Rectangle 20, 100";
+
+                dispTitle = "Example Christmas Tree";
+            }
+            lbl_TitleCmd_List.Text = dispTitle;
             txt_Cmd_List.Text = dispL;
         }
 
@@ -667,13 +768,6 @@ namespace ASE_Component2
             }
             return true;
         }
-
-        //private bool CheckCommandLine()
-        //{
-        //    //?
-        //    //?
-        //    return true;
-        //}
 
         //Check the parameter names in StartMethod & CallMethod
         private bool CheckParameter(int lineNumb)
@@ -1834,21 +1928,6 @@ namespace ASE_Component2
             return returnValue;
         }
 
-        private void openLoadFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            LoadFile();
-        }
-
-        private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            SaveFile();
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
         private int GetEndLineNo(string endType, int lineStartNo)
         {
             string chkCmdLine = txt_Command.Text;
@@ -1876,6 +1955,55 @@ namespace ASE_Component2
 
             return endLineNo;
         }
+        private void openLoadFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadFile();
+        }
+
+        private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFile();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void commandListWithSyntaxToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadCommandList("Command");
+        }
+
+        private void parameterListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadCommandList("Parameter");
+        }
+
+        private void bullsEyeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadCommandList("Bulls Eye");
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            string msg = "Graphical Programming Language Application (GPLA)";
+            msg += Environment.NewLine + "_________________________________________________________";
+            msg += Environment.NewLine + "";
+            msg += Environment.NewLine + "The purpose of this program is to create a simple Learning Environment that helps new programmers learn simple programming concept using graphics.";
+            msg += Environment.NewLine + "";
+            msg += Environment.NewLine + "Programmer: Rubin Shrestha";
+            msg += Environment.NewLine + "ID: C7202808";
+
+            DisplayError("About", msg, -1);
+        }
+
+        private void christmasTreeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LoadCommandList("Christmas Tree");
+        }
+
 
     }
     #endregion

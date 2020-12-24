@@ -1,0 +1,22 @@
+Clear
+reset
+moveto 70, 20
+pen red 10
+fillshape on
+
+StartMethod myCircle radius
+
+Loop 1 10 1
+
+IF radius > 50
+decrease circle 50
+increase moveto 50, 50
+Endif
+
+nextPenColor
+nextfillcolor
+
+EndLoop
+EndMethod
+
+callMethod myCircle 225
