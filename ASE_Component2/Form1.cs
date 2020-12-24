@@ -33,24 +33,28 @@ namespace ASE_Component2
         /// <param name="shapeWidth">Used for recatangle</param>
         /// <param name="shapeHeight">Used for Rectnangle</param>
         /// <param name="shapeRadius">Used for circle</param>
+        /// <param name="circleParamExist">Used for start method to check if circle has been used as a param or not</param>
+        /// <param name="rectangleParamExist">Used for start method to check if rectangle has been used as a param or not</param>
+        /// <param name="triangleParamExist">Used for start method to check if triangle has been used as a param or not</param>
+        /// <param name="lineParamExist">Used for start method to check if line has been used as a param or not</param>
 
         ShapeFactory factory = new ShapeFactory();
-        int intX = 0;        //Start Position X for all shape
-        int intY = 0;        //Start Position Y for all shape
-        int leftX = 0;        //Changed from midX
-        int leftY = 0;        //Changed from midY
-        int rightX = 0;     //Changed from finalX
-        int rightY = 0;     //Changed from finalY
-        int uptoX = 0;     // Added to distinguish end point of DrawTo line
-        int uptoY = 0;     // Added to distinguish end point of DrawTo line
+        int intX = 0;        
+        int intY = 0;        
+        int leftX = 0;       
+        int leftY = 0;       
+        int rightX = 0;     
+        int rightY = 0;     
+        int uptoX = 0;     
+        int uptoY = 0;     
         int shapeWidth = 0;
         int shapeHeight = 0;
-        int shapeRadius = 0;  //Added to distinguished radius 
-        bool circleParamExist = false;     //Added to be used in Method in component 2
-        bool rectangleParamExist = false;     //Added to be used in Method in component 2
-        bool triangleParamExist = false;     //Added to be used in Method in component 2
-        bool lineParamExist = false;     //Added to be used in Method in component 2
-        //neede to add triangle & drawto
+        int shapeRadius = 0;   
+        bool circleParamExist = false;     
+        bool rectangleParamExist = false;  
+        bool triangleParamExist = false;   
+        bool lineParamExist = false;
+
         /// <summary>
         /// fillColor is an object created of the class Color.
         /// "gObj" is an object of Graphics class.
@@ -59,20 +63,25 @@ namespace ASE_Component2
         /// <param name="penColor">Variable to define the color of the pen. Assigned specific numbers to specific colors</param>
         /// <param name="fillOk">variable to fill the shape or not.</param>
         /// <param name="lineNo">Identifies the line array.Needed for executing the one command at a time.</param>
+        /// <param name="RunAllCommand">Boolean to run the command one line at a time or the entire code.</param>
+        /// <param name="mStart">Variable for Line Number where the method starts</param>
+        /// <param name="mEnd">Variable for Line Number where the method ends</param>
+        /// <param name="NumRepeat">Variable to be used in case of loop</param>
+        /// <param name="arrCommand">Array to check Command Syntax  before the program is run</param>
+        /// <param name="arrParams">Array to allows variables to be used in loop and as parameters to draw commands</param>
         Color fillColor = new Color();
         int penSize = 2;
         int penColor = 1;         //penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
         int fillOk = 1;        //fillOk  1 = true, 2 = false
 
         int lineNo = 0;
-        bool RunAllCommand = false;  //Moved to make it accessible by all the method
+        bool RunAllCommand = false;
         Graphics gObj;
 
         //string[] myMethodArr;
-        int mStart, mEnd;         //variable for Line Number where the method starts and ends
-        int NumRepeat = 0;     //variable to be used in case of loop
-
-        //Added to check Command Syntax  before the program is run 
+        int mStart, mEnd;         
+        int NumRepeat = 0;     
+        
         string[,] arrCommand = new string[21, 2] { { "Clear", "1" },
                                                                             { "Reset", "1" },
                                                                             { "MoveTo", "3" },
@@ -96,7 +105,6 @@ namespace ASE_Component2
                                                                             { "ENDIF", "1" },
         };
 
-        //Added to allows variables to be used in loop and as parameters to draw commands
         string[] arrParams = { "intX", "intY", "leftX", "leftY", "rightX", "rightY", "uptoX", "uptoY", "Width", "Height",
                                             "Radius", "fillColor", "penColor", "penSize", "fillShape", "numRepeat" };
 
@@ -104,15 +112,16 @@ namespace ASE_Component2
         private void Form1_Load(object sender, EventArgs e)
         {
             gObj = Canvas.CreateGraphics(); //initialized
-                                            //            LoadCommandList("Command");              // Display command with syntax
-            LoadCommandList("Command");              // Display command with syntax
+            LoadCommandList("Command");              // Displays command with syntax
             ResetAll();
         }
 
         #region Component 1 - button objects
         /// <summary>
-        /// Method to list the commands to be dispalyed in txt_Cmd_List
+        ///  Method to list the commands to be dispalyed in txt_Cmd_List
         /// </summary>
+       /// <param name="displayInTextBox">Tells the method which string variable is to be displayed in the text box.</param>
+
         private void LoadCommandList(string displayInTextBox)
         {
             string dispL = "";
@@ -305,6 +314,12 @@ namespace ASE_Component2
             txt_CurrentCommand.Text = "";
         }
         //Added to check whether the commands are written with the Correct Syntax
+        /// <summary>
+        /// Click event for check code button.
+        /// Checks the entire code and displays the errors if any.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btn_ChkCode_Click(object sender, EventArgs e)
         {
 
@@ -334,7 +349,9 @@ namespace ASE_Component2
             LoadFile();
         }
 
-        //Open or Load the existing Text file in the text box
+        /// <summary>
+        /// Open or Load the existing Text file in the text box
+        /// </summary>
         private void LoadFile()
         {
             OpenFileDialog of = new OpenFileDialog();
@@ -346,6 +363,7 @@ namespace ASE_Component2
                 txt_Command.Text = s;
             }
         }
+
         /// <summary>
         /// Click event to for the button btn_SaveFile.
         /// Saves the commands in txt file.
@@ -354,7 +372,10 @@ namespace ASE_Component2
         {
             SaveFile();
         }
-        //Save the Contents of text box into a new text file
+
+        /// <summary>
+        /// Save the Contents of text box into a new text file
+        /// </summary>
         private void SaveFile()
         {
             SaveFileDialog sf = new SaveFileDialog();
@@ -373,10 +394,12 @@ namespace ASE_Component2
         /// Method to run the command entered.
         /// Reads and Executes the command written in the command box either one line at a time or the whole code..
         /// It identifies the command and executes it.
+        /// All the command runs through here. Also try catch is used.
+        /// Includes code for method, loop and if.
         /// </summary>
-        /// <param name="RunAllCommand">Boolean to run the command one line at a time or the entire code.</param>
+        /// <param name="chkCmdLine">String variable to store code written in textbox.</param>
         /// <param name="lines">array of strings to that holds the line of code</param>
-        /// <param name="runCmd">Array that holds the command and oparameter of each line.</param>
+        /// <param name="runCmd">Array that holds the command and parameter of each line.</param>
         /// <param name="numLines">Reads the length of the array lines</param>
         /// <param name="numParams">Reads the lenght of the array runCmd</param>
         private void RunCommand()
@@ -399,22 +422,22 @@ namespace ASE_Component2
 
                     //The following code is updated to avoid the unnecessary duplication so that the same method can be from inside
                     //Method, loop and if conditions.
-                    if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         //Added for component 2
+                    if (runCmd[0].ToUpper().Trim() == "STARTMETHOD")         
                     {
                         i = GetEndLineNo("ENDMETHOD", i);
                     }
-                    else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         //Added for component 2
+                    else if (runCmd[0].ToUpper().Trim() == "CALLMETHOD")         
                     {
                         int CallFromLine = i;
                         ExeMethodCalled(lines, i);
                         i = CallFromLine;
                     }
-                    else if (runCmd[0].ToUpper().Trim() == "LOOP")         //Added for component 2
+                    else if (runCmd[0].ToUpper().Trim() == "LOOP")         
                     {
                         //This loop is being called from normal command line. It may also be called from Method
                         i = RunLoop(i, false);
                     }
-                    else if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
+                    else if (runCmd[0].ToUpper().Trim() == "IF")         
                     {
                         //This loop is being called from normal command line. It may also be called from Method
                         i = RunIF(i);
@@ -467,7 +490,7 @@ namespace ASE_Component2
         /// <summary>
         /// method to display error messages.
         /// </summary>
-        /// <param name="errFrom">To identify if it was a command or parameter error.</param>
+        /// <param name="errFrom">To identify what type of error it was.</param>
         /// <param name="str">Displays the object of the array "lines"</param>
         /// <param name="i">Displays line number</param>
         private void DisplayError(string errFrom, string str, int i)
@@ -582,16 +605,21 @@ namespace ASE_Component2
 
 
         #region Component 2
+        /// <summary>
+        /// Method that executes various command or call other methods to complete the command
+        /// This method is seperated from the run command as an independent method which can be called from RunCommand method, ExeMethodCall, RunLoop and RunIf to minimize the dupication of the code.
+        /// </summary>
+        /// <param name="cmdLine">passes the command line to be executed.</param>
+        /// <param name="lineNumb">Identifies the line number of the command line.</param>
+        /// <returns>Returns true value</returns>
 
-        //the following method is added to adjust the command to be called from within the myMethod.
         private bool CommandExecuted(string cmdLine, int lineNumb)
         {
             string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
             int numParams = runCmd.Length;
             int i = lineNumb;
 
-
-            ////Check whether the command syntax i.e. command and required number of parament
+            //Check whether the command syntax is correct i.e. command and required number of parament
 
             //bool isSuccess = true;
             if (runCmd[0].ToUpper().Trim() == "MOVETO")
@@ -721,11 +749,14 @@ namespace ASE_Component2
                 //break;
             }
 
-            //Need to display line Number - make RunAllCommand a global var
             return true;
         }
 
-        //check Command and Command Syntax i.e. whether it contains the right number of parameters
+        /// <summary>
+        /// check Command and Command Syntax i.e. whether it contains the right number of parameters
+        /// </summary>
+        /// <returns>If command or parameters does not match returns false which will tell the calling method to terminate the process else true.</returns>
+
         private bool CheckCommandExist()
         {
             string chkCmdLine = txt_Command.Text;
@@ -751,7 +782,7 @@ namespace ASE_Component2
                         }
 
                         //int check = Convert.ToInt32(arrCommand[j, 1]);
-                        else if (Convert.ToInt32(arrCommand[j, 1]) != numParams)
+                        else if (Convert.ToInt32(arrCommand[j, 1]) != numParams) // for drawto, circle etc ....
                         {
                             DisplayError("Parameter", lines[i], i);
                             return false;
@@ -769,7 +800,12 @@ namespace ASE_Component2
             return true;
         }
 
-        //Check the parameter names in StartMethod & CallMethod
+        /// <summary>
+        /// Check the parameter names and properties in StartMethod & CallMethod
+        /// </summary>
+        /// <param name="lineNumb">Holds the line number of the command</param>
+        /// <returns>If command or parameters does not match returns false which will tell the calling method to terminate the process else true.</returns>
+        
         private bool CheckParameter(int lineNumb)
         {
             string chkCmdLine = txt_Command.Text;
@@ -848,15 +884,20 @@ namespace ASE_Component2
             return true;
         }
 
+        /// <summary>
+        /// Checks whether the parameters names or properties is correct.
+        /// </summary>
+        /// <param name="lineNumb">Holds the line number of the command</param>
+        /// <returns>If command or parameters does not match returns false which will tell the calling method to terminate the process else true.</returns>
         private bool CheckIncrease(int lineNumb)
         {
             string chkCmdLine = txt_Command.Text;
             //Create string[] lines as an array of lines from the command text box
             string[] lines = chkCmdLine.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-            //Check whether the passed on line number is the StartMethod or Call Method.
-            string[] methodChk = lines[lineNumb].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-            string vName = methodChk[1].ToUpper().Trim();
+            //Check Increase or Decrease
+            string[] increaseChk = lines[lineNumb].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            string vName = increaseChk[1].ToUpper().Trim();
             int numParam = 0;
             if (vName == "CIRCLE") { numParam = 3; }
             else if (vName == "RECTANGLE") { numParam = 4; }
@@ -864,7 +905,7 @@ namespace ASE_Component2
             else if (vName == "DRAWTO") { numParam = 4; }
             else if (vName == "MOVETO") { numParam = 4; }
 
-            if (numParam != methodChk.Length)
+            if (numParam != increaseChk.Length)
             {
                 DisplayError("Command", lines[lineNumb], lineNumb);
                 return false;
@@ -872,7 +913,10 @@ namespace ASE_Component2
             return true;
         }
 
-        //Updated for Component 2
+        /// <summary>
+        /// this method changes the string variable into the color variable for fill shape
+        /// </summary>
+        /// <param name="colorName">Holds the string value of the name of the color</param>
         private void FillColorToVar(string colorName)
         {
             if (colorName.ToUpper().Trim() == "RED") { fillColor = Color.Red; }
@@ -882,7 +926,10 @@ namespace ASE_Component2
             else { fillColor = Color.Gainsboro; }
         }
 
-        //Updated for Component 2
+        /// <summary>
+        /// this method changes the string variable into the proper integer value to be passed on into the shape class for pen
+        /// </summary>
+        /// <param name="ColorName">Holds the string value of the name of the color</param>
         private void PenColorToNum(string ColorName)
         {
             //penColor 1 = Black, 2 = Blue, 3 = Green, 4 = Red, 5 = Yellow
@@ -893,7 +940,10 @@ namespace ASE_Component2
             else { penColor = 1; }
         }
 
-        //Change fill color
+        /// <summary>
+        /// This method changes the current fill color to the next fill color
+        /// </summary>
+        /// <returns>Returns the fill color</returns>
         private Color NextFillColor()
         {
             if (fillColor == Color.Blue) { fillColor = Color.Green; }
@@ -904,6 +954,10 @@ namespace ASE_Component2
             return fillColor;
         }
 
+        /// <summary>
+        /// This method changes the current pen color to the next pen color
+        /// </summary>
+        /// <returns>Returns the fill color</returns>
         private int NextPenColor()
         {
             if (penColor < 5) { penColor++; }
@@ -912,6 +966,11 @@ namespace ASE_Component2
             return penColor;
         }
 
+        /// <summary>
+        /// This method changes the shape and size of the object by increasing or decreasing it.
+        /// </summary>
+        /// <param name="cmdLine">passes the command line to be executed.</param>
+        /// <param name="lineNum">Identifies the line number of the command line.</param>
         private void ChangeShapeSize(string cmdLine, int lineNum)
         {
             string[] runCmd = cmdLine.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -936,9 +995,8 @@ namespace ASE_Component2
                     iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
                 }
                 else { iWdth = Convert.ToInt32(runCmd[2]); }
-                //int iWdth = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                int iHght = Convert.ToInt32(runCmd[3].Trim());
 
+                int iHght = Convert.ToInt32(runCmd[3].Trim());
                 if (vAction == "INCREASE")
                 {
                     shapeWidth += iWdth;
@@ -956,6 +1014,7 @@ namespace ASE_Component2
                 int xLeft;
                 int yLeft;
                 int xRight;
+                int yRight;
                 if (runCmd[2].Contains(","))
                 {
                     xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
@@ -972,10 +1031,7 @@ namespace ASE_Component2
                 }
                 else { xRight = Convert.ToInt32(runCmd[4]); }
 
-                //int xLeft = Convert.ToInt32(runCmd[2].Substring(0, runCmd[2].IndexOf(",")));
-                //int yLeft = Convert.ToInt32(runCmd[3].Substring(0, runCmd[3].IndexOf(",")));
-                //int xRight = Convert.ToInt32(runCmd[4].Substring(0, runCmd[4].IndexOf(",")));
-                int yRight = Convert.ToInt32(runCmd[5].Trim());
+                yRight = Convert.ToInt32(runCmd[5].Trim());
 
                 if (vAction == "INCREASE")
                 {
@@ -1042,11 +1098,16 @@ namespace ASE_Component2
             }
         }
 
+        /// <summary>
+        /// This method executes the commands within the start method.
+        /// </summary>
+        /// <param name="lines">It is the array of lines from the command text box</param>
+        /// <param name="CalledFromLineNo">line no from which the method was called.</param>
         private void ExeMethodCalled(string[] lines, int CalledFromLineNo)
         {
-            //string[] lines is the array of lines from the command text box
-            int numLines = lines.Length;                        //total numbers of lines in the command box
-            int i = CalledFromLineNo;                           //line no from which the method was called.
+            
+            int numLines = lines.Length;                        
+            int i = CalledFromLineNo;                           
 
             //Check whether the passed on line number is the Call Method.
             string[] methodCall = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -1110,16 +1171,26 @@ namespace ASE_Component2
 
         }
 
+        /// <summary>
+        /// This method updates the parameters given in the StartMethods with parameter value given in the CallMethods
+        /// </summary>
+        /// <param name="methodStart">Array that holds the parameter list provided in the StartMethod</param>
+        /// <param name="methodCall">Array the holds the parameter value provided in the CallMethod</param>
         private void UpdateVarAsPerParams(string[] methodStart, string[] methodCall)
         {
-            //           //List of Variable Names to be Used in the parameter		
-            //           intX,intY,leftX,leftY, rightX, rightY, uptoX, uptoY, shapeWidth, shapeHeight, shapeRadius
+            //           List of Variable Names to be Used in the parameter:
+            //           intX,intY,leftX,leftY, rightX, rightY, uptoX, uptoY, Width, Height, Radius
             //           fillColor, penColor, penSize, fillShape
-            ////      Number of time for loop to repeat
+            //           Number of time for loop to repeat:
             //           NumRepeat
 
             int numParams = methodCall.Length;
-            if (methodStart.Length != numParams) { /* Error in Parameter mismatch*/ return; }
+            if (methodStart.Length != numParams) 
+            {
+                string msg = "Numbers of element in StartMethod and Callmethod does not Match";
+                DisplayError("Method Error", msg, -1); 
+                return ;  
+            }
 
             if (numParams == 2) { return; }              //This method does not have any parameter
 
@@ -1329,6 +1400,13 @@ namespace ASE_Component2
 
         }
 
+        /// <summary>
+        /// This method is called from CallMethod name. This method searches for the method names of the StartMethod
+        /// and this method updates the start line of the StartMethod and the end line of the EndMethod.
+        /// </summary>
+        /// <param name="lines">Array that holds the line number of the CallMethod</param>
+        /// <param name="methodName">String to hold the name of the method defined in StartMethod</param>
+        /// <returns>Returns true when the StartMethod name is found.</returns>
         private bool FindMethodName(string[] lines, string methodName)
         {
             bool foundName = false;
@@ -1368,6 +1446,12 @@ namespace ASE_Component2
             return foundName;
         }
 
+        /// <summary>
+        /// Method to run the loop.
+        /// </summary>
+        /// <param name="lineNum">Holds the start line number of the loop command</param>
+        /// <param name="isFromMethod">It is true if this method is called form the StartMethod or false</param>
+        /// <returns>Returns the end line of the loop</returns>
         private int RunLoop(int lineNum, bool isFromMethod)
         {
             //Loop startNum endNum increment
@@ -1427,7 +1511,7 @@ namespace ASE_Component2
                 check = runCmd[0].ToUpper().Trim();
                 numParams = runCmd.Length;
 
-                if (runCmd[0].ToUpper().Trim() == "ENDLOOP")         //Added for component 2
+                if (runCmd[0].ToUpper().Trim() == "ENDLOOP")        
                 {
                     startNum += incrNum;
                     if (startNum > endNum) { break; }
@@ -1436,7 +1520,7 @@ namespace ASE_Component2
                     runCmd = lines[i].Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 }
 
-                if (runCmd[0].ToUpper().Trim() == "IF")         //Added for component 2
+                if (runCmd[0].ToUpper().Trim() == "IF")       
                 {
                     i = RunIF(i);
                 }
@@ -1476,6 +1560,11 @@ namespace ASE_Component2
             return endLine + 1;
         }
 
+        /// <summary>
+        /// Method to run the IF statement
+        /// </summary>
+        /// <param name="lineNum">Holds the start line number of the IF statement</param>
+        /// <returns>Returns the end line of the IF</returns>
         private int RunIF(int lineNum)
         {
             //return retLineNum
@@ -1513,6 +1602,11 @@ namespace ASE_Component2
             return endLine;
         }
 
+        /// <summary>
+        /// This method compares the variables and parameters of the IF statement and returns true, false, or error.
+        /// </summary>
+        /// <param name="ifLine">holds the line of the If statemenr in aarray form</param>
+        /// <returns>returns true, false or error based on the correcteness of the statement.</returns>
         private int IfCompare(string[] ifLine)
         {
             //return value 0 -> true, 1 -> false and 2-> error
@@ -1537,7 +1631,7 @@ namespace ASE_Component2
                 return 2;
             }
 
-            //string[] cmpIf = { "=", ">", "<", "!=" };
+            //string[] cmpIf = { "=", "==" ">", "<", "!=" };
             //Check whether the proper Variable Comparision Symbol used
             string cmpIf = ifLine[2].Trim();
             if (cmpIf.Contains(",")) { cmpIf = cmpIf.Substring(0, cmpIf.IndexOf(",")); }
@@ -1566,15 +1660,11 @@ namespace ASE_Component2
                     //if (str.Contains("TOP") == true)
                     if (colfill.Contains(varIf)) { returnValue = 0; }
                     else { returnValue = 1; }
-                    //if (varIf == fillColor.ToString().ToUpper()) { returnValue = 0; }
-                    //else { returnValue = 1; }
                 }
                 else if (cmpIf == "!=")
                 {
                     if (!colfill.Contains(varIf)) { returnValue = 0; }
                     else { returnValue = 1; }
-                    //if (varIf != fillColor.ToString().ToUpper()) { returnValue = 0; }
-                    //else { returnValue = 1; }
                 }
                 else { returnValue = 2; }
             }
@@ -1928,6 +2018,12 @@ namespace ASE_Component2
             return returnValue;
         }
 
+        /// <summary>
+        /// This method provides the end line number of the end type defined by endtype such as EndMethod, EndLoop, EndIf. 
+        /// </summary>
+        /// <param name="endType">Holds the value of the end type</param>
+        /// <param name="lineStartNo">Holds the value of the start line number of either StartType, eg: StartMethod, loop, if.</param>
+        /// <returns>Returns the end Line number.</returns>
         private int GetEndLineNo(string endType, int lineStartNo)
         {
             string chkCmdLine = txt_Command.Text;
@@ -1955,36 +2051,74 @@ namespace ASE_Component2
 
             return endLineNo;
         }
+
+        /// <summary>
+        /// Click Method to load the file(in the menu)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void openLoadFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadFile();
         }
 
+        /// <summary>
+        /// Click Method to save the file(in the menu)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFile();
         }
 
+        /// <summary>
+        /// Click Method to exit the app(in the menu)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
         }
 
+        /// <summary>
+        /// Method to load the command list by clicking in "Command List with Syntax"  in txt_Command_List
+        /// Within "Help"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void commandListWithSyntaxToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadCommandList("Command");
         }
 
+        /// <summary>
+        /// Method to load the parameter list by clicking in "Parameter List" in txt_Command_List
+        /// Within "Help"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void parameterListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadCommandList("Parameter");
         }
 
+        /// <summary>
+        /// Method to help load a sample of code of bullseye.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void bullsEyeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadCommandList("Bulls Eye");
         }
 
+        /// <summary>
+        /// Method to open a message box about the program
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
 
@@ -1999,6 +2133,11 @@ namespace ASE_Component2
             DisplayError("About", msg, -1);
         }
 
+        /// <summary>
+        /// ethod to help load a sample of code of Christmas Tree.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void christmasTreeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             LoadCommandList("Christmas Tree");
